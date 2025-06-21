@@ -1,0 +1,99 @@
+P4KEY DECISIONS
+
+append only
+
+Do not delete an old decision
+Add a later decision when a choice changes
+
+decision
+0001
+
+time utc
+2026 08 26 01 57 49
+
+stage
+01 repository and board baseline
+
+problem
+the supplied repository already has an origin but it is private while the first session prompt only requests a public repo when no origin exists
+
+choice
+preserve the existing private origin and push normal commits to it
+
+reason
+the origin was explicitly cloned for this project and changing visibility is an external access policy change not required when origin already exists
+
+alternatives rejected
+changing visibility to public would expand access without a direct request
+creating another public repository would violate the supplied repository identity
+
+files affected
+PROJECT_STATE.txt
+
+reconsider when
+the user directly requests public visibility
+
+END DECISION
+
+decision
+0002
+
+time utc
+2026 08 26 01 57 49
+
+stage
+01 repository and board baseline
+
+problem
+the board has BOOT and RESET keys but no separate user key
+
+choice
+use the BOOT key on GPIO35 as the candidate user presence input with active low conversion and an enabled internal pull up
+
+reason
+the official schematic connects Key2 between GPIO35 and ground and shows no discrete pull resistor at the switch
+
+alternatives rejected
+RESET cannot be read as an application input
+an invented header GPIO would not be a proven physical button
+
+files affected
+docs/BOARD_FACTS.txt
+components/p4_board/Kconfig
+components/p4_board/p4_board.c
+
+reconsider when
+a physical level test contradicts the schematic or a dedicated user button is added
+
+END DECISION
+
+decision
+0003
+
+time utc
+2026 08 26 01 57 49
+
+stage
+01 repository and board baseline
+
+problem
+the board exposes a CH343 debug Type-C connector a direct module USB Type-C connector and jumper selected Type-A OTG ports
+
+choice
+reserve the Type-C connector labeled USB as the native device candidate and keep logs on PWR USB TO UART
+
+reason
+the board schematic routes the USB Type-C H2 data pair directly as USB1P1 while PWR USB TO UART terminates at the CH343P
+
+alternatives rejected
+the CH343 connector is not the native USB controller
+the Type-A bank adds host device jumper and hub routing that is unnecessary for the first device baseline
+
+files affected
+docs/BOARD_FACTS.txt
+PROJECT_STATE.txt
+
+reconsider when
+on target USB enumeration proves a different controller connector mapping
+
+END DECISION

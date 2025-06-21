@@ -1,0 +1,172 @@
+P4KEY COMMIT AND SYNC RULES
+
+BEFORE A STAGE
+
+git status
+git branch --show-current
+git log --oneline -15
+git remote -v
+
+When a remote exists
+
+git fetch --all --prune
+
+Only pull with rebase when
+
+the worktree is clean
+the current branch has an upstream
+there are remote commits to integrate
+no local uncommitted user work can be lost
+
+Never
+
+git reset --hard over user work
+git clean without reviewing every path
+git push --force
+git push --force-with-lease
+interactive rebase published commits
+amend a pushed commit
+delete a user branch
+change the remote URL without direct instruction
+
+PER COMMIT
+
+1 run the narrow tests
+2 run the build when firmware files changed
+3 append new errors and decisions
+4 rewrite PROJECT_STATE.txt
+5 inspect git diff
+6 stage only files for this atomic change
+7 commit with the planned lower case message
+8 push when upstream works
+9 verify local and upstream hashes
+10 update the next commit state
+
+A state file update that records the new commit hash cannot exist inside the commit it names before the commit is made
+
+Use this safe sequence
+
+write last successful commit as pending
+commit
+obtain the hash
+rewrite PROJECT_STATE.txt with the hash
+include that final hash update in the next planned commit
+
+For the fifth commit
+
+after making it
+rewrite PROJECT_STATE.txt with the final hash
+make a tiny sixth state only commit only when the stage prompt permits six
+Otherwise write the final hash after push and leave the state file clean by recording the short hash in the stage report rather than creating an endless self reference
+
+The preferred simpler approach
+
+PROJECT_STATE.txt stores last completed code commit before the current commit
+The stage report stores the final stage commit
+At the next stage first commit PROJECT_STATE.txt catches up
+
+Do not create an infinite commit loop for self referential state
+
+PUSH CHECK
+
+git push
+
+then
+
+git fetch
+git rev-parse HEAD
+git rev-parse @{u}
+git status --short --branch
+
+Hashes must match for synced
+
+When no upstream exists
+
+record no upstream
+do not invent one
+show the human the exact safe git push --set-upstream command only when a named remote and branch clearly exist
+
+WHEN PUSH FAILS
+
+append exact stderr to CHALLENGES_AND_ERRORS.txt
+
+Common classes
+
+authentication
+network
+protected branch
+non fast forward
+missing upstream
+remote hook
+large file
+
+Do not change history to make the error disappear
+
+For non fast forward
+
+fetch
+inspect graph
+stop when uncommitted work exists
+rebase only when safe
+rerun tests
+push normally
+
+COMMIT VOICE
+
+lower case
+no punctuation
+simple
+three to six words normally
+
+Most messages correctly spelled
+
+Every sixth message may contain one mild harmless typo such as
+
+add cbor reqest tests
+check usb enumration
+save interop resutls
+
+Never misspell
+
+ctap
+ctaphid
+webauthn
+fido
+aes
+gcm
+sha
+ecdsa
+p256
+esp32p4
+a file path
+a command
+a security result
+
+A typo remains optional
+Do not force one when it looks fake
+
+STAGE END REPORT
+
+stage
+status
+
+commits
+hash and subject for each
+
+tests
+command and result
+
+hardware
+what was actually observed
+
+manual actions
+what still needs the human
+
+errors
+entry numbers still open
+
+sync
+branch upstream ahead behind push result
+
+next
+exact prompt file

@@ -1,0 +1,70 @@
+ESP32-P4 2FA KEY BOARD FACTS
+
+stage 01 evidence snapshot
+2026 08 26
+
+OFFICIAL SOURCES
+
+Waveshare product documentation
+https://docs.waveshare.com/ESP32-P4-Module-DEV-KIT
+
+Waveshare schematic
+https://files.waveshare.com/wiki/ESP32-P4-Module-DEV-KIT/ESP32-P4-Module-DEV-KIT.pdf
+
+prior photograph of this project board
+/home/ishan/esp32p4-nnue/web/public/images/esp32-p4-module-dev-kit.jpg
+
+prior nonsecret boot record
+/home/ishan/esp32p4-nnue/README.md
+
+FACT TABLE
+
+| fact | value | evidence | confidence | action when unknown |
+| --- | --- | --- | --- | --- |
+| exact product | Waveshare ESP32-P4-Module-DEV-KIT SKU family 30560 | board photo silkscreen and official product page | high | none |
+| board revision | unknown | no PCB revision is visible in the available front photo and the schematic has no extracted revision field | low | inspect a rear silkscreen or packaging |
+| module | ESP32-P4-Module with ESP32-P4NRW32 | module shield text in the board photo and official product page | high | none |
+| chip revision | v1.3 was observed on this same board during the NNUE project | prior README boot record | medium until repeated | print the supported chip info after this baseline boots |
+| module memory | 32 MB stacked PSRAM and 16 MB external Nor flash | official product page and module shield | high | confirm runtime flash size and PSRAM configuration |
+| native USB device candidate | Type-C connector labeled USB | photo label and schematic H2 direct USB1P1 data pair | high for wiring medium for controller mode | verify with the IDF USB device stack before Prompt 03 |
+| USB data controller | direct ESP32-P4 module USB1P1 path | schematic H2 to module USB1P1_P and USB1P1_N | medium | confirm the IDF controller instance and speed on target |
+| separate logging and flashing | Type-C PWR USB TO UART through CH343P on GPIO37 and GPIO38 | photo label schematic USB to UART block and Windows PnP | high | use COM7 while attached to Windows |
+| native OTG alternatives | Type-A USB 2.0 high-speed bank with HOST DEVICE jumper | official product page and board photo | high | leave unused for the first direct device baseline |
+| buttons | BOOT and RST | board photo and official product page | high | none |
+| user presence candidate | BOOT Key2 on GPIO35 | official schematic Key2 GPIO35 to GND | high | verify raw levels without resetting |
+| button active level | active low | schematic switch closes GPIO35 to GND | high | verify high idle and low pressed on target |
+| external button pull | no discrete pull shown at Key2 runtime internal pull up required | official schematic BOOT block | medium | confirm stable idle level physically |
+| dual cable power | USB0_5V and USB1_5V feed the common VCC_5V power path through the board power selection network | official schematic POWER block | high | use host powered cables and avoid an extra 5 V header source |
+| high speed USB hardware | board advertises USB OTG 2.0 high speed and exposes the host device jumper bank | official product page | high | confirm selected connector speed during USB bringup |
+| flash and NVS | 16 MB flash is present default IDF partition table will reserve NVS after the first build | module shield official product page and generated partition table pending | medium | record exact offsets and sizes after build |
+
+STARTING BOARD STATE
+
+The CH343 interface appeared in Windows as USB VID 1A86 PID 55D3 on COM7.
+It was not passed through to WSL.
+
+Before any new flash the existing NNUE firmware answered four read only protocol requests.
+
+protocol
+1
+
+reported target
+esp32p4
+
+firmware
+1.1.0
+
+model state
+embedded
+
+model format
+3
+
+model bytes
+328480
+
+transposition table bytes
+262144
+
+The old firmware does not expose silicon revision flash size or PSRAM through its protocol.
+No flash erase eFuse write security feature or other irreversible action was performed.

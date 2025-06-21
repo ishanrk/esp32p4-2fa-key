@@ -1,0 +1,184 @@
+P4KEY CHALLENGES AND ERRORS
+
+append only
+
+Do not delete or rewrite an old entry
+Do not put secrets in this file
+
+entry
+0001
+
+time utc
+2026 08 26 01 49 39
+
+stage
+01 repository and board baseline
+
+action
+gh repo view ishanrk/esp32p4-2fa-key --json nameWithOwner,url,visibility,defaultBranchRef
+
+observed
+Unknown JSON field: "visibility"
+
+cause
+the installed GitHub CLI exposes isPrivate rather than visibility for repo view
+
+fix tried
+queried nameWithOwner url isPrivate defaultBranchRef and viewerPermission
+
+result
+fixed
+
+commit
+none
+
+regression test
+none
+
+next action
+use isPrivate for repository metadata checks
+
+END ENTRY
+
+entry
+0002
+
+time utc
+2026 08 26 01 49 56
+
+stage
+01 repository and board baseline
+
+action
+inspect WSL USB and serial devices then open /dev/ttyS7 with the NNUE board client
+
+observed
+lsusb showed only Linux Foundation root hubs
+find: '/dev/serial/by-id': No such file or directory
+termios.error: (5, 'Input/output error')
+
+cause
+the CH343 device remains attached to Windows as COM7 and is not passed through to WSL
+
+fix tried
+queried the existing firmware through Windows System.IO.Ports on COM7
+
+result
+partly fixed
+
+commit
+none
+
+regression test
+none
+
+next action
+use a reversible Windows flashing path or pass the board through to WSL
+
+END ENTRY
+
+entry
+0003
+
+time utc
+2026 08 26 01 52 21
+
+stage
+01 repository and board baseline
+
+action
+py -3 -c "import serial; print(serial.VERSION)"
+
+observed
+ModuleNotFoundError: No module named 'serial'
+
+cause
+Windows Python 3.12.2 does not have pyserial installed
+
+fix tried
+used the built in Windows System.IO.Ports API for the read only query
+
+result
+fixed
+
+commit
+none
+
+regression test
+none
+
+next action
+retain the captured starting firmware facts
+
+END ENTRY
+
+entry
+0004
+
+time utc
+2026 08 26 01 54 00
+
+stage
+01 repository and board baseline
+
+action
+format the Windows serial response with System.Convert ToHexString
+
+observed
+Method invocation failed because [System.Convert] does not contain a method named 'ToHexString'.
+
+cause
+Windows PowerShell uses a .NET runtime without Convert.ToHexString
+
+fix tried
+used System.BitConverter and removed dash separators
+
+result
+fixed
+
+commit
+none
+
+regression test
+decoded all four returned NNUE protocol frames with the existing host decoder
+
+next action
+continue without the temporary serial probe
+
+END ENTRY
+
+entry
+0005
+
+time utc
+2026 08 26 01 51 00
+
+stage
+01 repository and board baseline
+
+action
+inspect the downloaded official schematic with pdfinfo and pdftotext
+
+observed
+/bin/bash: pdfinfo: command not found
+/bin/bash: pdftotext: command not found
+
+cause
+Poppler command line tools are not installed
+
+fix tried
+used the official Waveshare documentation page schematic text extraction and board images
+
+result
+fixed
+
+commit
+none
+
+regression test
+cross checked product model module connector and key facts against the prior board photo
+
+next action
+record sources in docs/BOARD_FACTS.txt
+
+END ENTRY

@@ -1,0 +1,25 @@
+# esp idf output
+build/
+managed_components/
+sdkconfig
+sdkconfig.old
+
+# host tools
+.venv/
+venv/
+__pycache__/
+*.pyc
+.coverage
+coverage/
+htmlcov/
+
+# captures can contain account data
+captures/
+*.pcap
+*.pcapng
+
+# editors and host noise
+.idea/
+.vscode/
+*.swp
+.DS_Store
