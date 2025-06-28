@@ -1,7 +1,7 @@
 P4KEY PROJECT STATE
 
 updated utc
-2026 08 26 01 57 49
+2026 08 26 02 04 35
 
 project
 ESP32-P4 2FA Key
@@ -10,7 +10,7 @@ current stage
 01 repository and board baseline
 
 stage status
-in progress repository audit complete
+in progress project tree builds
 
 repository path
 /home/ishan/esp32p4-2fa-key
@@ -22,10 +22,10 @@ upstream
 origin/main
 
 local and upstream sync
-synced ahead 0 behind 0 before stage work
+synced through b0606ad before the project tree commit
 
 last successful commit
-3e4f97f Initial commit
+b0606ad record repo and board facts
 
 BOARD
 
@@ -42,7 +42,7 @@ ESP32 P4 chip revision
 1.3 from the prior NNUE boot record direct confirmation in this firmware pending
 
 flash and PSRAM
-16 MB Nor flash and 32 MB stacked PSRAM board facts runtime confirmation pending
+16 MB Nor flash configured and 32 MB stacked PSRAM configured at 200 MHz runtime confirmation pending
 
 native USB device connector
 Type-C connector labeled USB direct module USB1P1 path candidate for device mode
@@ -111,7 +111,7 @@ not performed
 LAST SUCCESSFUL COMMANDS
 
 build
-none project tree not created
+. /home/ishan/esp-idf/export.sh then idf.py set-target esp32p4 then idf.py build then idf.py size passed
 
 host unit tests
 none tests not created
@@ -130,10 +130,13 @@ not attempted
 
 WHAT WORKS
 
-empty repository and origin audited
+repository and origin audited
 pinned ESP IDF 6.0.2 environment verified
 connected CH343 interface identified as Windows COM7
 existing NNUE firmware read only state captured before replacement
+minimal C firmware builds for esp32p4
+16 MB flash PSRAM and UART console settings are generated as intended
+default partition table provides NVS at 0x9000 size 24 KiB and a 1 MiB factory app
 
 WHAT IS BROKEN
 
@@ -149,7 +152,7 @@ physical BOOT key level test
 
 EXACT NEXT ACTION
 
-commit repo and board facts then create the minimal ESP IDF project tree
+commit the project tree then add reproducible environment build flash monitor and state tools
 
 MANUAL ACTIONS STILL REQUIRED
 

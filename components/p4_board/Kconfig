@@ -1,0 +1,25 @@
+menu "P4Key board"
+
+config P4KEY_BOARD_PROFILE
+    string "Board profile"
+    default "waveshare_esp32_p4_module_dev_kit"
+
+config P4KEY_USB_CONNECTOR
+    string "Native USB device connector label"
+    default "USB Type-C"
+
+config P4KEY_BUTTON_GPIO
+    int "User presence button GPIO"
+    range -1 54
+    default 35
+    help
+        GPIO35 is the BOOT Key2 input proven by the Waveshare schematic.
+        Use -1 only when adapting to hardware without a proven button pin.
+
+config P4KEY_BUTTON_ACTIVE_LOW
+    bool "Button is active low"
+    default y
+    help
+        Key2 closes GPIO35 to ground. The runtime enables an internal pull up.
+
+endmenu
