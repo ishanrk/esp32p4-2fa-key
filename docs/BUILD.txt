@@ -1,0 +1,94 @@
+ESP32-P4 2FA KEY BUILD BASELINE
+
+PINNED TOOLS
+
+ESP IDF
+v6.0.2
+
+target
+esp32p4
+
+compiler observed
+riscv32-esp-elf-gcc 15.2.0
+
+esptool observed
+5.3.1
+
+Python observed
+3.10.12
+
+intended later components
+espressif esp_tinyusb 2.2.1
+espressif cbor 0.6.1~4
+
+Stage 01 does not add either managed component because neither is used yet.
+No component manifest or generated dependency lock exists in this stage.
+
+ENVIRONMENT
+
+From the repository root:
+
+. /home/ishan/esp-idf/export.sh
+python3 scripts/env_check.py
+
+The environment checker reports every required host tool and never installs
+or changes software. A wrong IDF version fails unless the developer passes
+--allow-version-mismatch explicitly.
+
+BUILD
+
+scripts/build.sh
+
+The script selects esp32p4 only when sdkconfig is absent or targets something
+else. It then runs:
+
+idf.py build
+idf.py size
+
+The source controlled sdkconfig.defaults enables the proven 16 MB flash,
+the module PSRAM, development logging on UART0, and no irreversible security
+feature. The generated sdkconfig remains local.
+
+FLASH
+
+scripts/flash.sh PORT
+
+or:
+
+P4KEY_PORT=PORT scripts/flash.sh
+
+The wrapper runs idf.py -p PORT flash. It does not erase the whole flash and
+does not start a monitor.
+
+MONITOR
+
+scripts/monitor.sh PORT
+
+or:
+
+P4KEY_PORT=PORT scripts/monitor.sh
+
+The board's logging connector is the Type-C port labeled PWR USB TO UART.
+It uses a CH343P and appeared on the current Windows host as COM7.
+This WSL environment cannot currently open that Windows serial device.
+
+The native FIDO device candidate is the separate Type-C connector labeled USB.
+Do not put FIDO traffic on the CH343 logging connector.
+
+PARTITION BASELINE
+
+The generated default single application table contains:
+
+nvs
+offset 0x9000
+size 24 KiB
+
+phy_init
+offset 0xf000
+size 4 KiB
+
+factory
+offset 0x10000
+size 1 MiB
+
+Stage 01 does not store a wrapping root or any credential data.

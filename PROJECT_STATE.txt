@@ -1,7 +1,7 @@
 P4KEY PROJECT STATE
 
 updated utc
-2026 08 26 02 04 35
+2026 08 26 02 08 32
 
 project
 ESP32-P4 2FA Key
@@ -10,7 +10,7 @@ current stage
 01 repository and board baseline
 
 stage status
-in progress project tree builds
+in progress build and state tools pass
 
 repository path
 /home/ishan/esp32p4-2fa-key
@@ -22,10 +22,10 @@ upstream
 origin/main
 
 local and upstream sync
-synced through b0606ad before the project tree commit
+synced through 84307ac before the tools commit
 
 last successful commit
-b0606ad record repo and board facts
+84307ac start p4key project tree
 
 BOARD
 
@@ -111,10 +111,10 @@ not performed
 LAST SUCCESSFUL COMMANDS
 
 build
-. /home/ishan/esp-idf/export.sh then idf.py set-target esp32p4 then idf.py build then idf.py size passed
+. /home/ishan/esp-idf/export.sh then scripts/build.sh passed
 
 host unit tests
-none tests not created
+python3 scripts/state_check.py passed structural checks
 
 on target tests
 Windows System.IO.Ports read only NNUE protocol queries on COM7 succeeded
@@ -137,11 +137,13 @@ existing NNUE firmware read only state captured before replacement
 minimal C firmware builds for esp32p4
 16 MB flash PSRAM and UART console settings are generated as intended
 default partition table provides NVS at 0x9000 size 24 KiB and a 1 MiB factory app
+environment build flash monitor and continuity tools pass their narrow checks
 
 WHAT IS BROKEN
 
 WSL cannot access the attached CH343 serial interface directly
 board revision is not established
+idf.py size emits a nonfatal sram_seg classification warning
 
 OPEN FACTS
 
@@ -152,13 +154,17 @@ physical BOOT key level test
 
 EXACT NEXT ACTION
 
-commit the project tree then add reproducible environment build flash monitor and state tools
+commit the tools then add board helper and continuity regression tests
 
 MANUAL ACTIONS STILL REQUIRED
 
 none before local project setup
 USB pass through or a Windows flashing path is required for the target run
 later perform website registration and login
+
+SHELLCHECK
+
+not installed test not attempted
 
 NOTES
 

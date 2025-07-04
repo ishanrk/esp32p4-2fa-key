@@ -182,3 +182,38 @@ next action
 record sources in docs/BOARD_FACTS.txt
 
 END ENTRY
+
+entry
+0006
+
+time utc
+2026 08 26 02 07 30
+
+stage
+01 repository and board baseline
+
+action
+scripts/build.sh running idf.py size under ESP IDF v6.0.2
+
+observed
+WARNING: cannot assign memory region sram_seg to chip memory type
+
+cause
+the ESP IDF size tool did not classify the generated ESP32 P4 sram_seg region
+
+fix tried
+confirmed the command exited successfully and retained the section and total image size report
+
+result
+partly fixed
+
+commit
+none
+
+regression test
+scripts/build.sh
+
+next action
+do not use the unclassified region for a memory claim and retain the exact warning
+
+END ENTRY

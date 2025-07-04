@@ -1,0 +1,35 @@
+ESP32-P4 2FA KEY CODE STYLE
+
+Firmware stays in C.
+Python is only for host tests and small tools.
+
+Use short direct names such as:
+
+usb_rx
+frame_add
+wait_press
+root_load
+
+Keep functions small.
+Prefer early returns and fixed buffers.
+Use consistent four space C indentation.
+
+Comments explain protocol fields hardware behavior and secret handling.
+Ordinary comments can be short rough lower case fragments.
+
+// old press cannot approve this request
+// clear it before the wait
+
+One to four blank lines may separate functions when it stays readable.
+Do not randomize syntax spacing.
+
+Avoid decorative names such as manager orchestrator provider facade boundary
+witness service locator and pipeline.
+
+Never misspell identifiers API names protocol values commands or security
+properties. Never add a fake typo to an identifier.
+
+Do not log keys roots private scalars nonces decrypted credential records full
+client data unique device IDs or full credential IDs.
+
+Correctness and clear security behavior override visual style.
