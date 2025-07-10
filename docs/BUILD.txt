@@ -75,6 +75,14 @@ This WSL environment cannot currently open that Windows serial device.
 The native FIDO device candidate is the separate Type-C connector labeled USB.
 Do not put FIDO traffic on the CH343 logging connector.
 
+HOST TESTS
+
+python3 -m unittest discover -s tests/host -v
+
+The suite compiles the pure button helper with -Wall -Wextra -Werror and checks
+active low active high and unconfigured GPIO behavior. It also runs state_check
+against filled missing-file and likely-secret fixtures.
+
 PARTITION BASELINE
 
 The generated default single application table contains:
