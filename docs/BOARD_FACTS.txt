@@ -22,21 +22,36 @@ FACT TABLE
 | fact | value | evidence | confidence | action when unknown |
 | --- | --- | --- | --- | --- |
 | exact product | Waveshare ESP32-P4-Module-DEV-KIT SKU family 30560 | board photo silkscreen and official product page | high | none |
-| board revision | unknown | no PCB revision is visible in the available front photo and the schematic has no extracted revision field | low | inspect a rear silkscreen or packaging |
+| board revision | not established | no PCB revision is visible in the available front photo or official schematic | low | inspect a rear silkscreen or packaging |
 | module | ESP32-P4-Module with ESP32-P4NRW32 | module shield text in the board photo and official product page | high | none |
-| chip revision | v1.3 was observed on this same board during the NNUE project | prior README boot record | medium until repeated | print the supported chip info after this baseline boots |
-| module memory | 32 MB stacked PSRAM and 16 MB external Nor flash | official product page and module shield | high | confirm runtime flash size and PSRAM configuration |
+| chip revision | v1.3 | esptool direct probe and baseline bootloader and app output in docs/BOOT_SAMPLE.txt | high | none |
+| module memory | 32 MiB stacked PSRAM and 16 MiB external Nor flash | official product page plus runtime 33554432 and 16777216 byte queries | high | none |
 | native USB device candidate | Type-C connector labeled USB | photo label and schematic H2 direct USB1P1 data pair | high for wiring medium for controller mode | verify with the IDF USB device stack before Prompt 03 |
 | USB data controller | direct ESP32-P4 module USB1P1 path | schematic H2 to module USB1P1_P and USB1P1_N | medium | confirm the IDF controller instance and speed on target |
 | separate logging and flashing | Type-C PWR USB TO UART through CH343P on GPIO37 and GPIO38 | photo label schematic USB to UART block and Windows PnP | high | use COM7 while attached to Windows |
 | native OTG alternatives | Type-A USB 2.0 high-speed bank with HOST DEVICE jumper | official product page and board photo | high | leave unused for the first direct device baseline |
 | buttons | BOOT and RST | board photo and official product page | high | none |
-| user presence candidate | BOOT Key2 on GPIO35 | official schematic Key2 GPIO35 to GND | high | verify raw levels without resetting |
-| button active level | active low | schematic switch closes GPIO35 to GND | high | verify high idle and low pressed on target |
-| external button pull | no discrete pull shown at Key2 runtime internal pull up required | official schematic BOOT block | medium | confirm stable idle level physically |
+| user presence candidate | BOOT Key2 on GPIO35 | official schematic Key2 GPIO35 to GND and running firmware config | high | verify the pressed raw level without resetting |
+| button active level | active low with idle raw level 1 | schematic switch closes GPIO35 to GND and baseline boot output | high for wiring and idle | manually sample raw level while pressed |
+| external button pull | no discrete pull shown at Key2 so the firmware enables the internal pull up | official schematic BOOT block and stable runtime idle level 1 | high | none |
 | dual cable power | USB0_5V and USB1_5V feed the common VCC_5V power path through the board power selection network | official schematic POWER block | high | use host powered cables and avoid an extra 5 V header source |
 | high speed USB hardware | board advertises USB OTG 2.0 high speed and exposes the host device jumper bank | official product page | high | confirm selected connector speed during USB bringup |
-| flash and NVS | 16 MB flash is present default IDF partition table will reserve NVS after the first build | module shield official product page and generated partition table pending | medium | record exact offsets and sizes after build |
+| flash and NVS | 16 MiB flash; NVS offset 0x9000 size 24 KiB; phy_init 0xf000 size 4 KiB; factory app 0x10000 size 1 MiB | runtime flash query generated partition table and captured boot table | high | revisit the table only when storage requirements change |
+
+RUNTIME BASELINE
+
+The baseline was built with ESP-IDF v6.0.2 for the pre-v3 ESP32-P4 path.
+Image metadata accepts silicon revision v0.0 through v1.99 and the attached
+chip is v1.3. A normal non-forced flash wrote the bootloader partition table
+and application, verified every image hash, and reset through RTS.
+
+The captured boot proves two cores, a 360 MHz CPU, 16 MiB DIO flash at 40 MHz,
+32 MiB PSRAM at 200 MHz, UART logging on GPIO37 and GPIO38, and BOOT GPIO35
+idle high. The firmware reached its idle loop without a reset or crash.
+
+The physical pressed level was not sampled because no person was available to
+hold the key. The schematic proves that Key2 closes GPIO35 to ground; a later
+manual level diagnostic should still confirm raw level 0 while pressed.
 
 STARTING BOARD STATE
 

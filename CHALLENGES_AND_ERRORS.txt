@@ -217,3 +217,178 @@ next action
 do not use the unclassified region for a memory claim and retain the exact warning
 
 END ENTRY
+
+entry
+0007
+
+time utc
+2026 08 26 02 11 20
+
+stage
+01 repository and board baseline
+
+action
+create a pinned temporary Windows esptool environment through an inline PowerShell command
+
+observed
+= : The term '=' is not recognized as the name of a cmdlet function script file or operable program.
+
+cause
+Bash expanded the PowerShell dollar variables before powershell.exe received the command
+
+fix tried
+protected the PowerShell code from Bash expansion and kept the environment under the Windows temporary directory
+
+result
+fixed
+
+commit
+none
+
+regression test
+the pinned Windows Python reported esptool 5.3.1 and completed chip-id and flash-id on COM7
+
+next action
+invoke Windows tools without exposing PowerShell variables to Bash
+
+END ENTRY
+
+entry
+0008
+
+time utc
+2026 08 26 02 12 40
+
+stage
+01 repository and board baseline
+
+action
+normal esptool write-flash of the first ESP IDF default build to the detected ESP32 P4 revision v1.3
+
+observed
+A fatal error occurred: bootloader.bin requires chip revision in range [v3.1 - v3.99] (this chip is revision v1.3). Use the force argument to flash anyway.
+
+cause
+the initial generated sdkconfig selected the IDF path for ESP32 P4 revision v3.1 or newer
+
+fix tried
+refused force enabled CONFIG_ESP32P4_SELECTS_REV_LESS_V3 reset the target and ran a clean rebuild
+
+result
+fixed
+
+commit
+none
+
+regression test
+esptool image-info reports v0.0 through v1.99 then a normal non-forced flash verified all images and booted on revision v1.3
+
+next action
+retain the pre-v3 silicon setting while this physical board is the target
+
+END ENTRY
+
+entry
+0009
+
+time utc
+2026 08 26 02 16 10
+
+stage
+01 repository and board baseline
+
+action
+retry the normal flash through nested Bash and PowerShell path interpolation
+
+observed
+Invalid value for '<address> <filename>...': [Errno 2] No such file or directory: '$boot_win'
+
+cause
+the nested quoting passed the Bash variable name literally to Windows Python
+
+fix tried
+invoked the temporary Windows python.exe directly from WSL and supplied three paths returned by wslpath
+
+result
+fixed
+
+commit
+none
+
+regression test
+the direct invocation wrote and verified bootloader.bin partition-table.bin and p4key.bin on COM7
+
+next action
+prefer direct Windows executable invocation when WSL must bridge a Windows serial port
+
+END ENTRY
+
+entry
+0010
+
+time utc
+2026 08 26 02 18 10
+
+stage
+01 repository and board baseline
+
+action
+prove every physical revision and BOOT key level fact available during the attached board run
+
+observed
+the board front photograph and official schematic do not expose a PCB revision and no person was available to press BOOT during a level diagnostic
+
+cause
+the rear silkscreen or packaging is not visible and a physical key press cannot be performed remotely
+
+fix tried
+recorded the official Key2 GPIO35 to ground path and captured stable runtime idle raw level 1 with the internal pull up
+
+result
+still failing
+
+commit
+none
+
+regression test
+docs/BOOT_SAMPLE.txt proves GPIO35 configured active low with idle raw level 1
+
+next action
+inspect the rear or packaging then manually confirm GPIO35 raw level 0 while BOOT is held
+
+END ENTRY
+
+entry
+0011
+
+time utc
+2026 08 26 02 18 30
+
+stage
+01 repository and board baseline
+
+action
+rerun the full size report after selecting the pre-v3 ESP32 P4 path
+
+observed
+the earlier cannot assign memory region sram_seg warning did not recur and the report completed with total image size 198374 bytes
+
+cause
+the warning was tied to the initial generated v3 memory layout rather than the pre-v3 layout required by this board
+
+fix tried
+regenerated sdkconfig and the whole build tree from sdkconfig.defaults
+
+result
+fixed
+
+commit
+none
+
+regression test
+. /home/ishan/esp-idf/export.sh then idf.py set-target esp32p4 then scripts/build.sh
+
+next action
+keep the actual silicon revision path pinned
+
+END ENTRY

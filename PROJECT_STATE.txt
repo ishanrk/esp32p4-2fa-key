@@ -1,7 +1,7 @@
 P4KEY PROJECT STATE
 
 updated utc
-2026 08 26 02 10 33
+2026 08 26 02 18 55
 
 project
 ESP32-P4 2FA Key
@@ -10,7 +10,7 @@ current stage
 01 repository and board baseline
 
 stage status
-in progress host baseline tests pass
+complete with physical PCB revision and pressed button level explicitly open
 
 repository path
 /home/ishan/esp32p4-2fa-key
@@ -22,10 +22,10 @@ upstream
 origin/main
 
 local and upstream sync
-synced through 57901f6 before the host tests commit
+synced through 7c3d22e before the final baseline state commit
 
 last successful commit
-57901f6 add build and state tools
+7c3d22e check board helper tests
 
 BOARD
 
@@ -33,40 +33,40 @@ exact Waveshare model
 ESP32-P4-Module-DEV-KIT
 
 board revision
-unknown no revision marking is visible in the available board photo or official schematic
+not established because no revision marking is visible in the available front photograph or official schematic
 
 module
-ESP32-P4-Module with ESP32-P4NRW32 32 MB stacked PSRAM and 16 MB Nor flash
+ESP32-P4-Module with ESP32-P4NRW32 32 MiB stacked PSRAM and 16 MiB Nor flash
 
 ESP32 P4 chip revision
-1.3 from the prior NNUE boot record direct confirmation in this firmware pending
+1.3 proven directly by esptool and the flashed baseline boot log
 
 flash and PSRAM
-16 MB Nor flash configured and 32 MB stacked PSRAM configured at 200 MHz runtime confirmation pending
+16777216 flash bytes and 33554432 PSRAM bytes proven at runtime with PSRAM at 200 MHz
 
 native USB device connector
-Type-C connector labeled USB direct module USB1P1 path candidate for device mode
+Type-C connector labeled USB with the direct module USB1P1 data path reserved as the device candidate
 
 native USB mode
-native USB controller exact runtime mode not yet tested
+hardware mapping is documented but device stack enumeration waits for the USB stage
 
 logging connector
 Type-C PWR USB TO UART through CH343P on GPIO37 and GPIO38 Windows COM7
 
 button GPIO
-35 BOOT key candidate for user presence
+35 BOOT Key2 candidate for user presence
 
 button active level
-active low runtime internal pull up required
+active low from the schematic with internal pull up and runtime idle raw level 1
 
 button fact source
-official Waveshare ESP32-P4-Module-DEV-KIT schematic Key2 GPIO35 to GND
+official schematic Key2 GPIO35 to GND plus baseline boot sample idle level
 
 USB VID
-unknown for project device stage
+not assigned for the project device in stage 01
 
 USB PID
-unknown for project device stage
+not assigned for the project device in stage 01
 
 TOOLCHAIN
 
@@ -74,7 +74,7 @@ ESP IDF
 6.0.2 verified checkout 7101770dc6db2667b3c477cc31365dd1acd6db4e
 
 target
-esp32p4
+esp32p4 pre v3 silicon path for the attached revision 1.3 device
 
 esp tinyusb
 target 2.2.1 not added in stage 01
@@ -86,7 +86,7 @@ compiler
 riscv32-esp-elf-gcc 15.2.0
 
 host OS
-Ubuntu under WSL2 Linux 6.6.87.2 x86_64
+Ubuntu under WSL2 Linux 6.6.87.2 x86_64 with Windows COM7 bridge
 
 host fido tool version
 not installed
@@ -110,17 +110,20 @@ not performed
 
 LAST SUCCESSFUL COMMANDS
 
-build
-. /home/ishan/esp-idf/export.sh then scripts/build.sh passed
+clean build
+. /home/ishan/esp-idf/export.sh then idf.py set-target esp32p4 then scripts/build.sh passed
 
 host unit tests
 python3 -m unittest discover -s tests/host -v passed 4 tests
 
+continuity check
+python3 scripts/state_check.py passed
+
 on target tests
-Windows System.IO.Ports read only NNUE protocol queries on COM7 succeeded
+normal esptool write flash on Windows COM7 verified all three images then an RTS reset produced docs/BOOT_SAMPLE.txt
 
 USB test
-not attempted native USB cable not visible in WSL
+not attempted because native USB enumeration is outside stage 01 and the cable is not visible in WSL
 
 FIDO test
 not attempted
@@ -130,12 +133,14 @@ not attempted
 
 WHAT WORKS
 
-repository and origin audited
+repository and private origin audited
 pinned ESP IDF 6.0.2 environment verified
 connected CH343 interface identified as Windows COM7
 existing NNUE firmware read only state captured before replacement
-minimal C firmware builds for esp32p4
-16 MB flash PSRAM and UART console settings are generated as intended
+minimal C firmware clean builds for ESP32 P4 revision v1.3
+normal flash writes and verifies without force or erase flash
+baseline firmware boots without a crash loop
+runtime reports 16 MiB flash 32 MiB PSRAM two cores and 360 MHz
 default partition table provides NVS at 0x9000 size 24 KiB and a 1 MiB factory app
 environment build flash monitor and continuity tools pass their narrow checks
 active low active high and unconfigured button helper tests pass
@@ -144,30 +149,31 @@ state checker positive missing file and likely secret fixture tests pass
 WHAT IS BROKEN
 
 WSL cannot access the attached CH343 serial interface directly
-board revision is not established
-idf.py size emits a nonfatal sram_seg classification warning
+physical PCB revision is not established
+physical BOOT pressed level is not sampled yet
+idf.py size emits a nonfatal sram_seg classification warning on the first v3 build and not on the clean pre v3 report
 
 OPEN FACTS
 
-physical board revision
-direct boot confirmation of chip revision flash and PSRAM
-native USB controller mapping and enumeration
-physical BOOT key level test
+physical board revision from rear silkscreen or packaging
+physical BOOT key pressed level confirmation
+native USB controller enumeration and negotiated speed in its later stage
 
 EXACT NEXT ACTION
 
-commit the host tests then perform the reversible target flash boot and button checks
+run prompts/02_crypto_accelerator_proof.txt without beginning USB or FIDO application work early
 
 MANUAL ACTIONS STILL REQUIRED
 
-none before local project setup
-USB pass through or a Windows flashing path is required for the target run
-later perform website registration and login
+inspect the board rear or package for a PCB revision marking
+press BOOT during a later level diagnostic to directly confirm raw level 0
+later perform website registration and login during the prompt that requests it
 
 SHELLCHECK
 
-not installed test not attempted
+not installed test not attempted and no package was installed
 
 NOTES
 
 never put a key nonce private scalar decrypted credential record or eFuse secret in this file
+Prompt 02 has not been started

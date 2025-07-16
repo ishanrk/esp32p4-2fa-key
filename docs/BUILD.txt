@@ -46,8 +46,9 @@ idf.py build
 idf.py size
 
 The source controlled sdkconfig.defaults enables the proven 16 MB flash,
-the module PSRAM, development logging on UART0, and no irreversible security
-feature. The generated sdkconfig remains local.
+the module PSRAM, the pre-v3 silicon path required by the attached v1.3 chip,
+development logging on UART0, and no irreversible security feature. The
+generated sdkconfig remains local.
 
 FLASH
 
@@ -70,7 +71,10 @@ P4KEY_PORT=PORT scripts/monitor.sh
 
 The board's logging connector is the Type-C port labeled PWR USB TO UART.
 It uses a CH343P and appeared on the current Windows host as COM7.
-This WSL environment cannot currently open that Windows serial device.
+This WSL environment cannot currently open that Windows serial device directly.
+The stage 01 target run used a temporary Windows esptool 5.3.1 environment and
+COM7. A normal flash at 40 MHz succeeded and verified the bootloader, partition
+table, and application. The temporary environment is not part of the project.
 
 The native FIDO device candidate is the separate Type-C connector labeled USB.
 Do not put FIDO traffic on the CH343 logging connector.
