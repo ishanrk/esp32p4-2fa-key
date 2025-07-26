@@ -23,3 +23,6 @@ captures/
 .vscode/
 *.swp
 .DS_Store
+
+# codex prompt pack
+planning/
