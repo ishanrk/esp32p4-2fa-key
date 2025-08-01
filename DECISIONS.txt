@@ -129,3 +129,99 @@ reconsider when
 the hardware target changes to ESP32 P4 revision v3 or newer
 
 END DECISION
+
+decision
+0005
+
+time utc
+2026 08 26 02 48 17
+
+stage
+02 crypto accelerator proof
+
+problem
+ESP IDF v6.0.2 bundles Mbed TLS 4.1.0 where the old low level SHA GCM and ECDSA headers are private implementation interfaces
+
+choice
+use the public PSA Crypto API family consistently for SHA 256 AES 256 GCM and P 256 operations
+
+reason
+the installed ESP IDF tests use PSA and its dispatch reaches the configured Espressif SHA AES GCM and general ECC drivers without depending on private headers
+
+alternatives rejected
+including mbedtls private headers would tie project code to unsupported internals
+mixing PSA and legacy low level APIs would add state and error handling without a hardware path benefit
+
+files affected
+docs/CRYPTO_PATHS.txt
+components/p4_crypto
+
+reconsider when
+the pinned ESP IDF public crypto surface changes
+
+END DECISION
+
+decision
+0006
+
+time utc
+2026 08 26 02 48 17
+
+stage
+02 crypto accelerator proof
+
+problem
+the IDF default enables the dedicated ECDSA verifier and software fallbacks even though this project must prove general P 256 ECC and only uses AES GCM and P 256
+
+choice
+disable dedicated ECDSA sign and verify paths AES software fallback unsupported curve ECC fallback and non AES GCM fallback
+
+reason
+the eFuse signer cannot represent independent WebAuthn credential keys and the dedicated verifier would make P 256 verification bypass the general ECC proof
+
+alternatives rejected
+leaving verify enabled would make the public verification route ambiguous
+enabling the eFuse signer would require irreversible provisioning and the wrong key model
+keeping unrelated fallbacks would weaken the release configuration proof
+
+files affected
+sdkconfig.defaults
+components/p4_crypto/include/p4_crypto_check.h
+scripts/check_crypto_config.py
+
+reconsider when
+the project adds a justified curve or non AES GCM use case or targets different silicon
+
+END DECISION
+
+decision
+0007
+
+time utc
+2026 08 26 02 48 17
+
+stage
+02 crypto accelerator proof
+
+problem
+the pre v3 ESP32 P4 bootloader disables its SAR ADC entropy source before the application and the project does not initialize an RF subsystem
+
+choice
+crypto_init will call the supported bootloader_random_enable function before PSA initialization and keep the entropy source enabled
+
+reason
+the installed public header permits application use when RF is absent and esp_fill_random otherwise has only pseudo random state after the bootloader disables the source
+
+alternatives rejected
+using esp_fill_random without an active entropy source would not satisfy credential key requirements
+direct register access would bypass the supported IDF flow
+a software PRNG seeded after entropy is disabled cannot restore true entropy
+
+files affected
+docs/CRYPTO_PATHS.txt
+components/p4_crypto/p4_crypto.c
+
+reconsider when
+the application needs the ADC or RF subsystem or targets revision v3 TRNG silicon
+
+END DECISION

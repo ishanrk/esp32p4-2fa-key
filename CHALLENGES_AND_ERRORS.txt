@@ -392,3 +392,75 @@ next action
 keep the actual silicon revision path pinned
 
 END ENTRY
+
+entry
+0012
+
+time utc
+2026 08 26 02 51 06
+
+stage
+02 crypto accelerator proof
+
+action
+inspect the generated ESP IDF v6.0.2 Mbed TLS hardware configuration before adding the release checks
+
+observed
+CONFIG_MBEDTLS_HARDWARE_ECDSA_VERIFY=y
+CONFIG_MBEDTLS_ECC_OTHER_CURVES_SOFT_FALLBACK=y
+CONFIG_MBEDTLS_GCM_SUPPORT_NON_AES_CIPHER=y
+
+cause
+these are ESP IDF defaults and do not express the narrower P4Key general ECC and AES only policy
+
+fix tried
+disabled the dedicated ECDSA sign and verify paths and the unrelated fallbacks in sdkconfig.defaults then regenerated the whole build
+
+result
+fixed
+
+commit
+pending record p4 crypto paths
+
+regression test
+python3 scripts/check_crypto_config.py
+
+next action
+keep compile time and generated configuration checks in every release build
+
+END ENTRY
+
+entry
+0013
+
+time utc
+2026 08 26 02 52 28
+
+stage
+02 crypto accelerator proof
+
+action
+compile the P4KEY_HOST_TEST bypass header through a temporary object then remove the object
+
+observed
+Rejected: rm -f style commands are not permitted. Use a safer approach
+
+cause
+the execution safety guard rejected the cleanup command before the test process started
+
+fix tried
+used cc -fsyntax-only through standard input so the compiler created no output file
+
+result
+fixed
+
+commit
+pending record p4 crypto paths
+
+regression test
+echo include p4_crypto_check.h piped to cc -fsyntax-only with P4KEY_HOST_TEST
+
+next action
+prefer no-output compiler checks for temporary header validation
+
+END ENTRY

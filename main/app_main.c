@@ -1,4 +1,5 @@
 #include "p4_board.h"
+#include "p4_crypto_check.h"
 #include "p4_state.h"
 
 #include "esp_err.h"

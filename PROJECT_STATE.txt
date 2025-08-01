@@ -1,16 +1,16 @@
 P4KEY PROJECT STATE
 
 updated utc
-2026 08 26 02 18 55
+2026 08 26 02 51 06
 
 project
 ESP32-P4 2FA Key
 
 current stage
-01 repository and board baseline
+02 crypto accelerator proof
 
 stage status
-complete with physical PCB revision and pressed button level explicitly open
+in progress hardware paths recorded and release configuration checks pass
 
 repository path
 /home/ishan/esp32p4-2fa-key
@@ -22,10 +22,10 @@ upstream
 origin/main
 
 local and upstream sync
-synced through 7c3d22e before the final baseline state commit
+synced through 61e622a before the first stage 02 commit
 
 last successful commit
-7c3d22e check board helper tests
+61e622a drop codex planning files
 
 BOARD
 
@@ -73,6 +73,9 @@ TOOLCHAIN
 ESP IDF
 6.0.2 verified checkout 7101770dc6db2667b3c477cc31365dd1acd6db4e
 
+Mbed TLS
+4.1.0 public PSA Crypto API selected
+
 target
 esp32p4 pre v3 silicon path for the attached revision 1.3 device
 
@@ -111,7 +114,7 @@ not performed
 LAST SUCCESSFUL COMMANDS
 
 clean build
-. /home/ishan/esp-idf/export.sh then idf.py set-target esp32p4 then scripts/build.sh passed
+. /home/ishan/esp-idf/export.sh then idf.py set-target esp32p4 then scripts/build.sh passed with crypto defaults
 
 host unit tests
 python3 -m unittest discover -s tests/host -v passed 4 tests
@@ -119,8 +122,11 @@ python3 -m unittest discover -s tests/host -v passed 4 tests
 continuity check
 python3 scripts/state_check.py passed
 
+crypto config check
+python3 scripts/check_crypto_config.py passed 18 required and disabled symbol checks
+
 on target tests
-normal esptool write flash on Windows COM7 verified all three images then an RTS reset produced docs/BOOT_SAMPLE.txt
+stage 01 baseline flash and boot passed on COM7 while stage 02 crypto self tests are not run yet
 
 USB test
 not attempted because native USB enumeration is outside stage 01 and the cable is not visible in WSL
@@ -145,6 +151,10 @@ default partition table provides NVS at 0x9000 size 24 KiB and a 1 MiB factory a
 environment build flash monitor and continuity tools pass their narrow checks
 active low active high and unconfigured button helper tests pass
 state checker positive missing file and likely secret fixture tests pass
+installed IDF source paths for TRNG SHA AES GCM general ECC and dedicated ECDSA are recorded
+release configuration requires hardware SHA AES GCM and general ECC
+dedicated eFuse ECDSA sign and verify paths are disabled
+AES unsupported curve ECC and non AES GCM fallbacks are disabled
 
 WHAT IS BROKEN
 
@@ -152,16 +162,18 @@ WSL cannot access the attached CH343 serial interface directly
 physical PCB revision is not established
 physical BOOT pressed level is not sampled yet
 idf.py size emits a nonfatal sram_seg classification warning on the first v3 build and not on the clean pre v3 report
+crypto APIs known answer tests and physical target proof are not implemented yet
 
 OPEN FACTS
 
 physical board revision from rear silkscreen or packaging
 physical BOOT key pressed level confirmation
 native USB controller enumeration and negotiated speed in its later stage
+stage 02 target crypto self test and benchmark evidence
 
 EXACT NEXT ACTION
 
-run prompts/02_crypto_accelerator_proof.txt without beginning USB or FIDO application work early
+implement rand_fill sha256_sum gcm_seal and fail closed gcm_open then run their known answer and negative tests
 
 MANUAL ACTIONS STILL REQUIRED
 
@@ -176,4 +188,5 @@ not installed test not attempted and no package was installed
 NOTES
 
 never put a key nonce private scalar decrypted credential record or eFuse secret in this file
-Prompt 02 has not been started
+the user removed repository planning copies in published commit 61e622a and attached prompt pack files are the stage instruction source
+Prompt 02 is in progress and Prompt 03 has not been started
