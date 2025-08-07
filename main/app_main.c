@@ -1,4 +1,5 @@
 #include "p4_board.h"
+#include "p4_crypto.h"
 #include "p4_crypto_check.h"
 #include "p4_state.h"
 
@@ -17,6 +18,12 @@ void app_main(void)
     // baseline facts only
     // no device identity or secret bytes here
     ESP_ERROR_CHECK(p4_state_log_boot());
+
+    int crypto_err = crypto_init();
+    if (crypto_err != P4_CRYPTO_OK) {
+        ESP_LOGE(tag, "crypto initialization failed (%d)", crypto_err);
+        return;
+    }
 
     esp_err_t err = p4_board_init();
     if (err != ESP_OK) {

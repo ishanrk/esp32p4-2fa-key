@@ -225,3 +225,68 @@ reconsider when
 the application needs the ADC or RF subsystem or targets revision v3 TRNG silicon
 
 END DECISION
+
+decision
+0008
+
+time utc
+2026 08 26 03 01 35
+
+stage
+02 crypto accelerator proof
+
+problem
+the fixed GCM API has separate ciphertext and tag buffers while the pinned PSA multipart driver requires exclusive input and output ranges and can emit tentative plaintext before tag verification
+
+choice
+use PSA multipart GCM reject all output to input overlap reject overlapping ciphertext and tag outputs and clear the full plaintext destination after every processing failure
+
+reason
+multipart GCM maps to the fixed API without allocation while the strict alias policy satisfies the PSA buffer contract and explicit clearing prevents a caller from receiving unauthenticated plaintext
+
+alternatives rejected
+exact in place operation is outside the pinned exclusive buffer contract
+allowing partial overlap could corrupt data before authentication
+returning the tentative output after a failed tag would expose unauthenticated plaintext
+
+files affected
+components/p4_crypto/p4_crypto_gcm.c
+docs/CRYPTO_PATHS.txt
+
+reconsider when
+the pinned PSA driver documents a safe in place contract or the public API shape changes
+
+END DECISION
+
+decision
+0009
+
+time utc
+2026 08 26 03 01 35
+
+stage
+02 crypto accelerator proof
+
+problem
+the prompt asks for a private RNG callback for key generation and ECDSA but the selected public PSA API exposes no application supplied per operation RNG callback
+
+choice
+use the ESP IDF configured PSA external RNG hook after crypto_init enables the supported entropy source instead of adding an unused private callback
+
+reason
+the pinned PSA implementation routes key generation randomized ECDSA nonce generation and other random requests through mbedtls_psa_external_get_random to esp_fill_random
+
+alternatives rejected
+an unused project callback would not influence PSA operations
+overriding the ESP IDF external hook would conflict with the installed platform implementation
+using private Mbed TLS headers only to pass a callback would abandon the selected public API family
+
+files affected
+docs/CRYPTO_PATHS.txt
+components/p4_crypto/p4_crypto.c
+components/p4_crypto/p4_crypto_rng.c
+
+reconsider when
+the pinned public PSA API adds a supported application RNG callback or the crypto API family changes
+
+END DECISION

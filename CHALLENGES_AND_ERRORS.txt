@@ -464,3 +464,145 @@ next action
 prefer no-output compiler checks for temporary header validation
 
 END ENTRY
+
+entry
+0014
+
+time utc
+2026 08 26 03 01 35
+
+stage
+02 crypto accelerator proof
+
+action
+run the crypto configuration checker against sdkconfig.defaults with a positional path
+
+observed
+usage: check_crypto_config.py [-h] [--sdkconfig SDKCONFIG]
+check_crypto_config.py: error: unrecognized arguments: sdkconfig.defaults
+
+cause
+the checker defines the configuration path as an optional --sdkconfig argument rather than a positional argument
+
+fix tried
+reran scripts/check_crypto_config.py --sdkconfig sdkconfig.defaults
+
+result
+fixed
+
+commit
+pending add rng sha and gcm
+
+regression test
+the defaults and generated sdkconfig each passed all 18 required and disabled symbol checks
+
+next action
+use the documented optional argument when checking any nondefault path
+
+END ENTRY
+
+entry
+0015
+
+time utc
+2026 08 26 03 01 35
+
+stage
+02 crypto accelerator proof
+
+action
+invoke scripts/build.sh from a fresh execution shell
+
+observed
+idf.py not found
+run: . /home/ishan/esp-idf/export.sh
+
+cause
+the fresh shell had not loaded the pinned ESP IDF environment
+
+fix tried
+sourced /home/ishan/esp-idf/export.sh in the same shell before invoking scripts/build.sh
+
+result
+fixed
+
+commit
+pending add rng sha and gcm
+
+regression test
+the firmware build and size report completed with total image size 199976 bytes
+
+next action
+load the pinned environment in every fresh build shell
+
+END ENTRY
+
+entry
+0016
+
+time utc
+2026 08 26 03 04 02
+
+stage
+02 crypto accelerator proof
+
+action
+append the two new challenge entries and design decisions using a generic END marker as patch context
+
+observed
+the new records were inserted after entry 0001 and decision 0001 instead of at the ends of the append only files
+
+cause
+the patch matched the first repeated END marker rather than the final marker
+
+fix tried
+moved only the uncommitted new records after the existing final entries and used unique final entry context
+
+result
+fixed
+
+commit
+pending add rng sha and gcm
+
+regression test
+record identifiers are ordered 0001 through 0016 and python3 scripts/state_check.py passes
+
+next action
+use unique trailing context for every later append only update
+
+END ENTRY
+
+entry
+0017
+
+time utc
+2026 08 26 03 12 15
+
+stage
+02 crypto accelerator proof
+
+action
+review the uncommitted RNG SHA and GCM wrapper cleanup and debug error paths
+
+observed
+a failed psa_destroy_key call was treated as if the volatile key could no longer be live and local validation failures could leave an older PSA detail code visible to debug tests
+
+cause
+the success cleanup path passed key_live false to its failure helper and public entry points reset detail only after successful operations
+
+fix tried
+kept the key possibly live for a best effort second destruction attempt and reset debug detail at every public operation entry
+
+result
+fixed
+
+commit
+pending add rng sha and gcm
+
+regression test
+the full firmware build config checker host tests and continuity checker pass after the cleanup changes
+
+next action
+retain original PSA error codes while cleanup remains best effort and never report stale detail for local failures
+
+END ENTRY

@@ -1,7 +1,7 @@
 P4KEY PROJECT STATE
 
 updated utc
-2026 08 26 02 51 06
+2026 08 26 03 12 15
 
 project
 ESP32-P4 2FA Key
@@ -10,7 +10,7 @@ current stage
 02 crypto accelerator proof
 
 stage status
-in progress hardware paths recorded and release configuration checks pass
+in progress RNG SHA 256 and AES 256 GCM wrappers build with the pinned hardware configuration
 
 repository path
 /home/ishan/esp32p4-2fa-key
@@ -22,10 +22,10 @@ upstream
 origin/main
 
 local and upstream sync
-synced through 61e622a before the first stage 02 commit
+synced through 4f8e523 before the second stage 02 commit
 
 last successful commit
-61e622a drop codex planning files
+4f8e523 record p4 crypto paths
 
 BOARD
 
@@ -113,8 +113,8 @@ not performed
 
 LAST SUCCESSFUL COMMANDS
 
-clean build
-. /home/ishan/esp-idf/export.sh then idf.py set-target esp32p4 then scripts/build.sh passed with crypto defaults
+firmware build
+source /home/ishan/esp-idf/export.sh then scripts/build.sh passed with total image size 199982 bytes and 81 percent app partition free
 
 host unit tests
 python3 -m unittest discover -s tests/host -v passed 4 tests
@@ -123,7 +123,7 @@ continuity check
 python3 scripts/state_check.py passed
 
 crypto config check
-python3 scripts/check_crypto_config.py passed 18 required and disabled symbol checks
+python3 scripts/check_crypto_config.py passed 18 required and disabled generated sdkconfig checks
 
 on target tests
 stage 01 baseline flash and boot passed on COM7 while stage 02 crypto self tests are not run yet
@@ -155,6 +155,11 @@ installed IDF source paths for TRNG SHA AES GCM general ECC and dedicated ECDSA 
 release configuration requires hardware SHA AES GCM and general ECC
 dedicated eFuse ECDSA sign and verify paths are disabled
 AES unsupported curve ECC and non AES GCM fallbacks are disabled
+crypto_init restores the supported pre v3 entropy source before PSA initialization
+rand_fill uses esp_fill_random without allocating or printing bytes
+sha256_sum uses the PSA streaming SHA 256 route and preserves output on precondition failure
+AES 256 GCM uses fixed 12 byte nonces and 16 byte tags through PSA multipart AEAD
+GCM rejects output to input overlap and clears the plaintext destination on processing failure
 
 WHAT IS BROKEN
 
@@ -162,7 +167,7 @@ WSL cannot access the attached CH343 serial interface directly
 physical PCB revision is not established
 physical BOOT pressed level is not sampled yet
 idf.py size emits a nonfatal sram_seg classification warning on the first v3 build and not on the clean pre v3 report
-crypto APIs known answer tests and physical target proof are not implemented yet
+P 256 wrappers crypto known answer tests report generation and physical target proof are not implemented yet
 
 OPEN FACTS
 
@@ -173,7 +178,7 @@ stage 02 target crypto self test and benchmark evidence
 
 EXACT NEXT ACTION
 
-implement rand_fill sha256_sum gcm_seal and fail closed gcm_open then run their known answer and negative tests
+implement P 256 generation public derivation strict DER signing and verification through general hardware ECC
 
 MANUAL ACTIONS STILL REQUIRED
 
