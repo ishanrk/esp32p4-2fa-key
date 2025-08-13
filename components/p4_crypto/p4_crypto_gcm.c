@@ -30,12 +30,7 @@ static int seal_fail(psa_aead_operation_t *op, psa_key_id_t key_id,
                      uint8_t tag[P4_CRYPTO_GCM_TAG_LEN])
 {
     psa_aead_abort(op);
-    if (key_live) {
-        psa_status_t destroy_status = psa_destroy_key(key_id);
-        if (status == PSA_SUCCESS) {
-            status = destroy_status;
-        }
-    }
+    p4_crypto_key_drop(key_id, key_live, &status);
 
     if (plain_len != 0) {
         secret_clear(cipher, plain_len);
@@ -143,12 +138,7 @@ static int open_fail(psa_aead_operation_t *op, psa_key_id_t key_id,
                      uint8_t *plain, size_t cipher_len)
 {
     psa_aead_abort(op);
-    if (key_live) {
-        psa_status_t destroy_status = psa_destroy_key(key_id);
-        if (status == PSA_SUCCESS) {
-            status = destroy_status;
-        }
-    }
+    p4_crypto_key_drop(key_id, key_live, &status);
 
     // update can expose bytes before verify checks the tag
     if (cipher_len != 0) {

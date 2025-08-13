@@ -10,6 +10,8 @@
 #define P4_CRYPTO_AES256_KEY_LEN 32
 #define P4_CRYPTO_GCM_NONCE_LEN 12
 #define P4_CRYPTO_GCM_TAG_LEN 16
+#define P4_CRYPTO_P256_SCALAR_LEN 32
+#define P4_CRYPTO_P256_DER_MAX 72
 
 int crypto_init(void);
 
@@ -37,6 +39,30 @@ int gcm_open(
     size_t cipher_len,
     const uint8_t tag[P4_CRYPTO_GCM_TAG_LEN],
     uint8_t *plain);
+
+int p256_make(
+    uint8_t priv[P4_CRYPTO_P256_SCALAR_LEN],
+    uint8_t x[P4_CRYPTO_P256_SCALAR_LEN],
+    uint8_t y[P4_CRYPTO_P256_SCALAR_LEN]);
+
+int p256_pub(
+    const uint8_t priv[P4_CRYPTO_P256_SCALAR_LEN],
+    uint8_t x[P4_CRYPTO_P256_SCALAR_LEN],
+    uint8_t y[P4_CRYPTO_P256_SCALAR_LEN]);
+
+int p256_sign_hash(
+    const uint8_t priv[P4_CRYPTO_P256_SCALAR_LEN],
+    const uint8_t hash[P4_CRYPTO_SHA256_LEN],
+    uint8_t *sig,
+    size_t sig_cap,
+    size_t *sig_len);
+
+int p256_verify_hash(
+    const uint8_t x[P4_CRYPTO_P256_SCALAR_LEN],
+    const uint8_t y[P4_CRYPTO_P256_SCALAR_LEN],
+    const uint8_t hash[P4_CRYPTO_SHA256_LEN],
+    const uint8_t *sig,
+    size_t sig_len);
 
 void secret_clear(void *ptr, size_t len);
 

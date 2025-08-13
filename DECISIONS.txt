@@ -290,3 +290,66 @@ reconsider when
 the pinned public PSA API adds a supported application RNG callback or the crypto API family changes
 
 END DECISION
+
+decision
+0010
+
+time utc
+2026 08 26 03 18 26
+
+stage
+02 crypto accelerator proof
+
+problem
+PSA offers randomized and deterministic ECDSA algorithms and the stage must record the actual nonce mode without assuming signatures differ
+
+choice
+use randomized PSA ECDSA with SHA 256 for P 256 signing
+
+reason
+the installed builtin ECDSA implementation draws the per signature nonce through the configured PSA external RNG hook and therefore the enabled ESP32 P4 entropy path
+
+alternatives rejected
+deterministic ECDSA is supported but would not exercise the hardware random source for each nonce on this general ECC route
+asserting repeated signatures differ would turn a permitted implementation detail into a correctness requirement
+
+files affected
+components/p4_crypto/p4_crypto_p256.c
+docs/CRYPTO_PATHS.txt
+
+reconsider when
+a later protocol or side channel review requires deterministic nonce generation
+
+END DECISION
+
+decision
+0011
+
+time utc
+2026 08 26 03 18 26
+
+stage
+02 crypto accelerator proof
+
+problem
+the public Mbed TLS DER converter rejects trailing data but can accept some nonminimal length and INTEGER encodings that strict DER must reject
+
+choice
+prevalidate the complete DER shape with a small host testable canonical checker then parse and re encode with the public Mbed TLS PSA utility and require an exact byte match
+
+reason
+the pure checker rejects long form lengths negative integers redundant padding and trailing bytes while the installed converter remains responsible for the raw r and s conversion
+
+alternatives rejected
+using only the converter would accept some alternate BER encodings
+returning the 64 byte PSA r followed by s format would violate the public API
+implementing ECDSA arithmetic or ASN1 big integer conversion in project code is unnecessary
+
+files affected
+components/p4_crypto/p4_crypto_p256.c
+components/p4_crypto/p4_crypto_p256_util.c
+
+reconsider when
+the pinned public converter itself guarantees the same strict canonical policy
+
+END DECISION

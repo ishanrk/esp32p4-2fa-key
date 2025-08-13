@@ -1,7 +1,7 @@
 P4KEY PROJECT STATE
 
 updated utc
-2026 08 26 03 12 15
+2026 08 26 03 23 20
 
 project
 ESP32-P4 2FA Key
@@ -10,7 +10,7 @@ current stage
 02 crypto accelerator proof
 
 stage status
-in progress RNG SHA 256 and AES 256 GCM wrappers build with the pinned hardware configuration
+in progress general P 256 key derivation randomized ECDSA and strict DER wrappers build with the pinned hardware configuration
 
 repository path
 /home/ishan/esp32p4-2fa-key
@@ -22,10 +22,10 @@ upstream
 origin/main
 
 local and upstream sync
-synced through 4f8e523 before the second stage 02 commit
+synced through 5e60888 before the third stage 02 commit
 
 last successful commit
-4f8e523 record p4 crypto paths
+5e60888 add rng sha and gcm
 
 BOARD
 
@@ -117,7 +117,10 @@ firmware build
 source /home/ishan/esp-idf/export.sh then scripts/build.sh passed with total image size 199982 bytes and 81 percent app partition free
 
 host unit tests
-python3 -m unittest discover -s tests/host -v passed 4 tests
+python3 -m unittest discover -s tests/host -v passed 5 tests
+
+p256 pure helper checks
+python3 -m unittest discover -s tests/host -v compiles p4_crypto_p256_util.c with Wall Wextra Werror and runs fixed scalar range and canonical DER cases
 
 continuity check
 python3 scripts/state_check.py passed
@@ -160,6 +163,9 @@ rand_fill uses esp_fill_random without allocating or printing bytes
 sha256_sum uses the PSA streaming SHA 256 route and preserves output on precondition failure
 AES 256 GCM uses fixed 12 byte nonces and 16 byte tags through PSA multipart AEAD
 GCM rejects output to input overlap and clears the plaintext destination on processing failure
+P 256 generation derivation signing and verification wrappers compile against the public PSA API
+P 256 scalar range and strict DER helpers pass their host checks
+the P 256 wrappers require fixed scalar coordinate digest and DER bounds and clear temporary buffers
 
 WHAT IS BROKEN
 
@@ -167,7 +173,7 @@ WSL cannot access the attached CH343 serial interface directly
 physical PCB revision is not established
 physical BOOT pressed level is not sampled yet
 idf.py size emits a nonfatal sram_seg classification warning on the first v3 build and not on the clean pre v3 report
-P 256 wrappers crypto known answer tests report generation and physical target proof are not implemented yet
+crypto known answer tests benchmark report generation and physical target proof are not implemented yet
 
 OPEN FACTS
 
@@ -178,7 +184,7 @@ stage 02 target crypto self test and benchmark evidence
 
 EXACT NEXT ACTION
 
-implement P 256 generation public derivation strict DER signing and verification through general hardware ECC
+add bounded host and target crypto known answer negative smoke and benchmark tests without logging secret material
 
 MANUAL ACTIONS STILL REQUIRED
 

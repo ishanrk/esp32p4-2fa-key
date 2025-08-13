@@ -606,3 +606,38 @@ next action
 retain original PSA error codes while cleanup remains best effort and never report stale detail for local failures
 
 END ENTRY
+
+entry
+0018
+
+time utc
+2026 08 26 03 23 20
+
+stage
+02 crypto accelerator proof
+
+action
+review the uncommitted P 256 signature output and volatile key cleanup paths
+
+observed
+p256_sign_hash wrote sig_len before rejecting a sig_len pointer that overlapped a const private key or digest and cleanup errors could be hidden after an earlier operation error
+
+cause
+the output length policy was applied before alias validation and each wrapper had its own cleanup precedence
+
+fix tried
+validated sig_len aliasing before its first write and centralized a two attempt volatile PSA key destruction helper that surfaces a repeated cleanup failure
+
+result
+fixed
+
+commit
+pending wire p256 key operations
+
+regression test
+the firmware build passes and the stage target tests include a sig_len alias case before final acceptance
+
+next action
+keep output length zeroing after pointer alias validation and before any crypto operation
+
+END ENTRY

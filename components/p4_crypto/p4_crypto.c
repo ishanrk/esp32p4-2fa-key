@@ -87,6 +87,26 @@ int p4_crypto_from_psa(psa_status_t status)
 }
 
 
+void p4_crypto_key_drop(psa_key_id_t key_id, bool key_live,
+                        psa_status_t *status)
+{
+    if (!key_live) {
+        return;
+    }
+
+    psa_status_t cleanup = psa_destroy_key(key_id);
+    if (cleanup == PSA_SUCCESS) {
+        return;
+    }
+
+    // retry once because failure can leave a volatile slot live
+    psa_status_t retry = psa_destroy_key(key_id);
+    if (*status == PSA_SUCCESS || retry != PSA_SUCCESS) {
+        *status = cleanup;
+    }
+}
+
+
 bool p4_crypto_overlap(const void *a, size_t a_len,
                        const void *b, size_t b_len)
 {

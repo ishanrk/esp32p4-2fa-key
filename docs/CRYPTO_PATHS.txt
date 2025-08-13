@@ -63,3 +63,24 @@ No eFuse is read written provisioned or modified by this stage. Secure Boot and
 Flash Encryption stay disabled. Per-credential private scalars remain visible
 to software long enough to export wrap and sign, and temporary copies must be
 cleared. This is not a claim of hardware-protected credential keys.
+
+P256 OPERATION DETAILS
+
+P4Key selects randomized PSA ECDSA with SHA 256. The installed builtin ECDSA
+implementation obtains each nonce through the PSA external RNG hook described
+above. Public derivation and signing call general P 256 scalar multiplication;
+verification calls the builtin ECDSA multiplication path because both dedicated
+ECDSA peripheral options are disabled. Those multiplications reach ecc_alt.c
+and esp_ecc.c, where the ESP32 P4 constant-time hardware multiply mode is set.
+
+Private scalars are accepted only in the fixed range 1 through group order
+minus one and PSA import validates them again. Public points use the 65 byte
+uncompressed form. PSA import checks the point through the configured hardware
+point verifier. P 256 has cofactor one, so an accepted finite on-curve point is
+already in its prime-order subgroup.
+
+PSA signatures are 64 byte raw r followed by s internally. The public wrapper
+converts them with the installed Mbed TLS PSA utility and exposes only canonical
+ASN.1 DER. Verification first enforces short minimal lengths and positive
+minimal INTEGER encodings, then parses and re-encodes the signature and requires
+an exact match. This rejects trailing bytes and alternate BER encodings.
