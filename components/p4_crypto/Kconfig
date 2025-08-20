@@ -1,0 +1,18 @@
+menu "P4Key crypto proof"
+
+config P4KEY_CRYPTO_SELFTEST
+    bool "Run crypto self tests once at boot"
+    default n
+    help
+        Run bounded accelerator known answer negative and random smoke tests.
+        Test names status and timing are logged but crypto values are not.
+
+config P4KEY_CRYPTO_BENCH
+    bool "Run crypto benchmarks after self tests"
+    depends on P4KEY_CRYPTO_SELFTEST
+    default n
+    help
+        Report minimum operation timing and repetition counts.
+        Timing is supporting data and never proves hardware selection.
+
+endmenu

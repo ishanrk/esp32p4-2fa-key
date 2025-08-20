@@ -1,6 +1,9 @@
 #include "p4_board.h"
 #include "p4_crypto.h"
 #include "p4_crypto_check.h"
+#if CONFIG_P4KEY_CRYPTO_SELFTEST
+#include "p4_crypto_test.h"
+#endif
 #include "p4_state.h"
 
 #include "esp_err.h"
@@ -24,6 +27,13 @@ void app_main(void)
         ESP_LOGE(tag, "crypto initialization failed (%d)", crypto_err);
         return;
     }
+
+#if CONFIG_P4KEY_CRYPTO_SELFTEST
+    if (p4_crypto_selftest_run() != 0) {
+        ESP_LOGE(tag, "crypto self test failed");
+        return;
+    }
+#endif
 
     esp_err_t err = p4_board_init();
     if (err != ESP_OK) {

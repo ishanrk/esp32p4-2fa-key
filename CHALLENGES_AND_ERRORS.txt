@@ -641,3 +641,181 @@ next action
 keep output length zeroing after pointer alias validation and before any crypto operation
 
 END ENTRY
+
+entry
+0019
+
+time utc
+2026 08 26 03 34 10
+
+stage
+02 crypto accelerator proof
+
+action
+build the separate crypto target test profile with the new self tests and benchmarks enabled
+
+observed
+compilation stopped for p4_crypto_selftest.c and p4_crypto_bench.c with fatal error esp_timer.h no such file or directory and IDF reported that esp_timer was absent from the p4_crypto requirements
+
+cause
+the test only sources include the ESP timer API but the component registration did not declare the esp_timer component dependency
+
+fix tried
+added esp_timer to the p4_crypto component requirements
+
+result
+fixed
+
+commit
+pending add crypto target tests
+
+regression test
+scripts/build_crypto_test.sh completed and linked both test sources after the dependency was added
+
+next action
+complete both builds and preserve self tests as opt in only
+
+END ENTRY
+
+entry
+0020
+
+time utc
+2026 08 26 03 39 44
+
+stage
+02 crypto accelerator proof
+
+action
+run the uncommitted crypto target test image on the attached ESP32 P4 revision 1.3 through Windows COM7
+
+observed
+CRYPTO_TEST gcm_multi FAIL code 285 detail 0
+CRYPTO_TEST gcm_aad FAIL code 285 detail 0
+CRYPTO_TEST gcm_hw_one_shot FAIL code 474 detail 0
+the other 20 target tests passed
+
+cause
+the test fixture combined the AES 256 key nonce and expected tags with ciphertext copied from the AES 128 form of the NIST vector
+
+fix tried
+replaced the 64 byte expected ciphertext with the AES 256 NIST value and independently checked the complete ciphertext and tag with Python cryptography AESGCM
+
+result
+fixed
+
+commit
+pending add crypto target tests
+
+regression test
+gcm_multi gcm_aad and gcm_hw_one_shot all passed together after a normal rebuild and flash on the physical target
+
+next action
+rebuild flash normally without force or whole flash erase and capture the full named target result log
+
+END ENTRY
+
+entry
+0021
+
+time utc
+2026 08 26 03 41 03
+
+stage
+02 crypto accelerator proof
+
+action
+independently review the uncommitted empty plaintext AES GCM known answer test
+
+observed
+gcm_vector passed a null plaintext pointer to memcmp with a zero byte length in the empty vector case
+
+cause
+the helper relied on zero length memcmp not reading its pointers even though the C interface does not guarantee null pointer arguments are valid
+
+fix tried
+guarded both payload comparisons with an explicit zero length success condition
+
+result
+fixed
+
+commit
+pending add crypto target tests
+
+regression test
+the empty AES 256 GCM known answer passed in the final exact target image
+
+next action
+complete the clean review then rebuild flash and run the physical target suite
+
+END ENTRY
+
+entry
+0022
+
+time utc
+2026 08 26 03 42 48
+
+stage
+02 crypto accelerator proof
+
+action
+finish the independent read only review of target tests and benchmarks after all 23 tests and 9 benchmarks passed on the physical board
+
+observed
+no blocking or medium issues remained but the review noted an implicit signature length assumption a missing direct PSA debug detail and repeated public benchmark nonce sequences between payload sizes
+
+cause
+the test code relied on successful wrapper invariants did not copy direct PSA errors into the project debug slot and initialized each benchmark nonce domain identically
+
+fix tried
+added an explicit DER length bound before mutation preserved direct PSA failure details and separated benchmark nonce prefixes by payload length
+
+result
+fixed
+
+commit
+pending add crypto target tests
+
+regression test
+all 23 target tests and all 9 benchmarks passed after the hardening changes on the attached board
+
+next action
+perform the final exact image build flash capture and release profile build
+
+END ENTRY
+
+entry
+0023
+
+time utc
+2026 08 26 03 45 55
+
+stage
+02 crypto accelerator proof
+
+action
+conditionally declare the test only esp_timer and heap component dependencies from CONFIG_P4KEY_CRYPTO_SELFTEST
+
+observed
+the target test reconfiguration still selected p4_crypto_selftest.c and p4_crypto_bench.c but both failed with fatal error esp_timer.h no such file or directory
+
+cause
+ESP IDF resolves component dependency requirements during an earlier expansion pass where a component Kconfig conditional cannot reliably change the dependency graph
+
+fix tried
+restored the unconditional component requirement declaration while retaining conditional test source selection
+
+result
+fixed
+
+commit
+pending add crypto target tests
+
+regression test
+the normal release build remained 199982 bytes with both test options disabled and the final rebuilt target profile SHA 256 ed029db92ca0b3171bef9f11562b76b7cab4a197d70926baeb1abee7af2de783 matches the board tested image
+
+next action
+rebuild the target profile and verify its binary hash is unchanged from the exact board tested image
+
+END ENTRY

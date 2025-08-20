@@ -353,3 +353,100 @@ reconsider when
 the pinned public converter itself guarantees the same strict canonical policy
 
 END DECISION
+
+decision
+0012
+
+time utc
+2026 08 26 03 46 50
+
+stage
+02 crypto accelerator proof
+
+problem
+the bounded nonce sample target tests and benchmarks use test only memory and should not run during every normal firmware boot
+
+choice
+keep CONFIG_P4KEY_CRYPTO_SELFTEST and CONFIG_P4KEY_CRYPTO_BENCH default off and build the enabled profile in build/crypto-test with its own generated sdkconfig
+
+reason
+the separate profile makes target proof reproducible without adding test sources or boot work to the normal release image
+
+alternatives rejected
+enabling self tests in sdkconfig.defaults would run random smoke and benchmark work on every release boot
+reusing the release build directory would make profile state ambiguous
+
+files affected
+components/p4_crypto/Kconfig
+components/p4_crypto/CMakeLists.txt
+scripts/build_crypto_test.sh
+sdkconfig.crypto-test.defaults
+
+reconsider when
+a dedicated manufacturing or diagnostic application replaces the conditional test profile
+
+END DECISION
+
+decision
+0013
+
+time utc
+2026 08 26 03 46 50
+
+stage
+02 crypto accelerator proof
+
+problem
+the production multipart PSA GCM wrapper exercises hardware AES and software GHASH but does not enter the pinned whole message P4 GCM DMA helper
+
+choice
+add one test only public PSA one shot AES 256 GCM known answer using internal DMA capable input and output buffers
+
+reason
+the 64 byte aligned payload and buffer capabilities satisfy the installed driver source conditions for the P4 GCM DMA branch while the production wrapper tests still prove its fixed API and plaintext clearing policy
+
+alternatives rejected
+timing alone cannot select or prove an accelerator route
+changing the production fixed wrapper solely to fit a proof branch would weaken its simple buffer and failure policy
+calling an internal driver API would couple project code to a private interface
+
+files affected
+components/p4_crypto/p4_crypto_selftest.c
+docs/CRYPTO_PATHS.txt
+
+reconsider when
+the pinned public multipart driver gains the same whole message DMA route or the production API changes
+
+END DECISION
+
+decision
+0014
+
+time utc
+2026 08 26 03 46 50
+
+stage
+02 crypto accelerator proof
+
+problem
+crypto operation timing varies with scheduler activity and cannot establish which implementation source was selected
+
+choice
+report minimum microseconds with bounded repetition counts only as supporting target data
+
+reason
+minimum values provide a compact repeatable smoke measurement while hardware selection remains proven from pinned source configuration and linked paths
+
+alternatives rejected
+claiming constant time from aggregate measurements would be unsupported
+using one sample would be unnecessarily noisy
+long statistical runs could interfere with the watchdog and do not improve path proof
+
+files affected
+components/p4_crypto/p4_crypto_bench.c
+docs/CRYPTO_PATHS.txt
+
+reconsider when
+a later performance stage defines a controlled measurement protocol
+
+END DECISION

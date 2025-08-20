@@ -13,7 +13,7 @@ PATH TABLE
 | --- | --- | --- | --- | --- | --- | --- |
 | true random bytes | bootloader_random_enable then esp_fill_random | components/bootloader_support/src/bootloader_random_esp32p4.c and components/esp_hw_support/hw_random.c | CONFIG_ESP32P4_SELECTS_REV_LESS_V3=y selects the attached v1.3 path; no separate RNG Kconfig switch | random output is written to the caller buffer | target length difference and bounded nonce collision smoke tests | the smoke test cannot prove entropy quality; the SAR ADC source must stay reserved while enabled |
 | SHA-256 | psa_hash_setup psa_hash_update psa_hash_finish | components/mbedtls/port/psa_driver/esp_sha/core/psa_crypto_driver_esp_sha256.c components/mbedtls/port/sha/core/sha.c and components/mbedtls/port/sha/core/esp_sha_gdma_impl.c | CONFIG_MBEDTLS_SHA256_C=y and CONFIG_MBEDTLS_HARDWARE_SHA=y | not applicable | empty abc block crossing and multi-update known answers | short or non-DMA data can use SHA hardware block mode instead of DMA; this is not a software digest fallback |
-| AES-256-GCM | PSA multipart AEAD with PSA_ALG_GCM | components/mbedtls/port/psa_driver/esp_aes/psa_crypto_driver_esp_aes_gcm.c and components/mbedtls/port/aes/esp_aes_gcm.c | CONFIG_MBEDTLS_AES_C=y CONFIG_MBEDTLS_GCM_C=y CONFIG_MBEDTLS_HARDWARE_AES=y CONFIG_MBEDTLS_HARDWARE_GCM=y | the supplied AES key active volatile PSA slot and hardware driver key context are software visible | NIST known answers tamper cases and cleared output after authentication failure | ESP-IDF calls this partially accelerated GCM because GHASH remains software while AES operations use hardware |
+| AES-256-GCM | PSA multipart AEAD with PSA_ALG_GCM plus a test-only one-shot proof | components/mbedtls/port/psa_driver/esp_aes/psa_crypto_driver_esp_aes_gcm.c and components/mbedtls/port/aes/esp_aes_gcm.c | CONFIG_MBEDTLS_AES_C=y CONFIG_MBEDTLS_GCM_C=y CONFIG_MBEDTLS_HARDWARE_AES=y CONFIG_MBEDTLS_HARDWARE_GCM=y | the supplied AES key active volatile PSA slot and hardware driver key context are software visible | NIST known answers tamper and clear tests plus a DMA-capable one-shot known answer | ESP-IDF calls multipart GCM partially accelerated because GHASH remains software; the direct one-shot proof is test only |
 | P-256 key and ECDSA operations | PSA volatile ECC keys with psa_generate_key psa_export_key psa_export_public_key psa_sign_hash and psa_verify_hash | components/mbedtls/port/ecc/ecc_alt.c and components/mbedtls/port/ecc/esp_ecc.c through the Mbed TLS builtin ECDSA path | CONFIG_MBEDTLS_ECP_C=y CONFIG_MBEDTLS_ECDSA_C=y CONFIG_MBEDTLS_ECP_DP_SECP256R1_ENABLED=y and CONFIG_MBEDTLS_HARDWARE_ECC=y | yes the exported per-credential scalar and active volatile key slot are briefly software visible | scalar-one public known answer generation derivation strict DER signing verification and invalid scalar tests | this is general ECC acceleration and not a hardware-protected per-credential key store |
 | dedicated ECDSA peripheral | not used | components/mbedtls/port/psa_driver/esp_ecdsa/psa_crypto_driver_esp_ecdsa.c is excluded from this path | CONFIG_MBEDTLS_HARDWARE_ECDSA_SIGN=n and CONFIG_MBEDTLS_HARDWARE_ECDSA_VERIFY=n | an eFuse signing key would be hardware hidden but cannot scale to per-credential keys | config checker and compile-time errors | intentionally disabled for both signing and verification so the P-256 proof uses general ECC |
 
@@ -53,6 +53,13 @@ pinned PSA configuration's exclusive-buffer contract. Authentication is
 checked after tentative plaintext can be written, so gcm_open explicitly
 clears the full output region on any failure after processing starts.
 
+The target-only gcm_hw_one_shot test separately calls public psa_aead_encrypt
+with a 64 byte nonzero NIST payload and internal DMA-capable input and output.
+Those conditions satisfy the pinned esp_aes_gcm_input_support_hw_accel checks
+and reach esp_crypto_aes_gcm_encrypt through esp_aes_gcm_crypt_and_tag and
+esp_aes_process_dma_gcm. The known answer proves correct target operation while
+the enabled symbols and linked installed sources prove route selection.
+
 CONFIG_MBEDTLS_AES_SOFT_FALLBACK exists in Kconfig but has no consumer in the
 pinned C or CMake source. Keeping it disabled records policy; hardware proof
 comes from CONFIG_MBEDTLS_HARDWARE_AES and the selected Espressif source path.
@@ -84,3 +91,12 @@ converts them with the installed Mbed TLS PSA utility and exposes only canonical
 ASN.1 DER. Verification first enforces short minimal lengths and positive
 minimal INTEGER encodings, then parses and re-encodes the signature and requires
 an exact match. This rejects trailing bytes and alternate BER encodings.
+
+TARGET PROOF PROFILE
+
+CONFIG_P4KEY_CRYPTO_SELFTEST and CONFIG_P4KEY_CRYPTO_BENCH default off. The
+sdkconfig.crypto-test.defaults profile enables them only in build/crypto-test.
+The attached revision v1.3 board passed all 23 named tests and all 9 bounded
+benchmarks through Windows COM7. Logs contain test names status numeric failure
+details and timing only. Timing is supporting data and is not a constant-time or
+hardware-selection claim.
