@@ -819,3 +819,73 @@ next action
 rebuild the target profile and verify its binary hash is unchanged from the exact board tested image
 
 END ENTRY
+
+entry
+0024
+
+time utc
+2026 08 26 04 09 21
+
+stage
+02 crypto accelerator proof
+
+action
+independently review the deterministic crypto proof report before its commit
+
+observed
+a contradictory duplicate sdkconfig assignment could produce PASS because the report parser retained only the final value and malformed or repeated identical size records were not rejected
+
+cause
+the report reused the general configuration reader with last assignment semantics and reduced size matches to a set before checking uniqueness
+
+fix tried
+added a report specific configuration parser that rejects every duplicate symbol assignment and required exactly one strictly grouped total image size record
+
+result
+fixed
+
+commit
+pending save crypto proof repot
+
+regression test
+the host report fixture now rejects a contradictory duplicate configuration malformed comma grouping and both conflicting and identical duplicate size records
+
+next action
+run the complete host verification regenerate the physical target report and perform a final independent review
+
+END ENTRY
+
+entry
+0025
+
+time utc
+2026 08 26 04 16 04
+
+stage
+02 crypto accelerator proof
+
+action
+independently re review the optional ESP application image binding parser
+
+observed
+synthetic images declaring segment count and first segment length pairs 0 and 0 1 and 0 and 1 and 175 were accepted when descriptor magic and hash bytes existed at fixed offsets
+
+cause
+the parser checked file and descriptor magic values but did not validate the ESP image segment table before reading the application descriptor
+
+fix tried
+required one through sixteen declared segments a first segment at least 256 bytes long and a complete first segment within the supplied file
+
+result
+fixed
+
+commit
+pending save crypto proof repot
+
+regression test
+the host report fixture now uses a valid 256 byte first segment and rejects zero or excessive segment counts short descriptor segments and truncated declared segments
+
+next action
+rerun the report and full host suites then request final independent verification
+
+END ENTRY

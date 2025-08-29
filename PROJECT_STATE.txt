@@ -1,7 +1,7 @@
 P4KEY PROJECT STATE
 
 updated utc
-2026 08 26 03 46 50
+2026 08 26 04 18 16
 
 project
 ESP32-P4 2FA Key
@@ -10,7 +10,7 @@ current stage
 02 crypto accelerator proof
 
 stage status
-in progress release and crypto test profiles build and all target crypto tests and benchmarks pass with only the generated proof report remaining
+complete hardware TRNG SHA 256 AES 256 GCM and general P 256 paths are configured implemented tested on target and recorded in the generated proof report
 
 repository path
 /home/ishan/esp32p4-2fa-key
@@ -22,10 +22,10 @@ upstream
 origin/main
 
 local and upstream sync
-synced through 88a47bf with zero ahead and zero behind before the fourth stage 02 commit
+synced through acde68f with zero ahead and zero behind before the fifth stage 02 commit
 
 last successful commit
-88a47bf wire p256 key operations
+acde68f add crypto target tests
 
 BOARD
 
@@ -120,7 +120,7 @@ crypto target profile build
 source /home/ishan/esp-idf/export.sh then scripts/build_crypto_test.sh passed with total image size 345100 bytes 67 percent app partition free and p4key.bin SHA 256 ed029db92ca0b3171bef9f11562b76b7cab4a197d70926baeb1abee7af2de783
 
 host unit tests
-python3 -m unittest discover -s tests/host -v passed 5 tests
+python3 -m unittest discover -s tests/host -v passed 16 tests including 11 strict crypto report fixtures
 
 p256 pure helper checks
 python3 -m unittest discover -s tests/host -v compiles p4_crypto_p256_util.c with Wall Wextra Werror and runs fixed scalar range and canonical DER cases
@@ -133,6 +133,9 @@ python3 scripts/check_crypto_config.py passed 18 required and disabled generated
 
 on target tests
 normal non forced COM7 flash verified the exact target profile image then all 23 crypto self tests and all 9 benchmarks passed on the attached ESP32 P4 revision 1.3
+
+crypto proof report
+python3 scripts/crypto_report.py --sdkconfig build/crypto-test/sdkconfig --log captures/crypto-selftest-com7.log --size captures/crypto-test-size.txt --image build/crypto-test/p4key.bin --output docs/generated/CRYPTO_REPORT.txt passed with report status PASS IDF total image size 345100 bytes and a matching boot ELF fingerprint
 
 USB test
 not attempted because native USB enumeration is outside stage 01 and the cable is not visible in WSL
@@ -173,6 +176,9 @@ the opt in target profile passes RNG SHA 256 AES 256 GCM and general P 256 known
 the direct public PSA one shot GCM known answer uses DMA capable internal buffers and passes through the pinned whole message P4 accelerator branch
 target benchmarks report minimum microseconds and repetitions only as supporting data
 normal firmware keeps crypto self tests and benchmarks disabled
+no RSA primitive or accelerator path is used because the v0.1 protocol requires ES256 only
+the report parser rejects missing failed duplicated reordered or malformed target evidence and wrong benchmark repetitions
+docs/generated/CRYPTO_REPORT.txt records only whitelisted facts and explicitly states proof limits
 
 WHAT IS BROKEN
 
@@ -180,7 +186,6 @@ WSL cannot access the attached CH343 serial interface directly
 physical PCB revision is not established
 physical BOOT pressed level is not sampled yet
 idf.py size emits a nonfatal sram_seg classification warning on the first v3 build and not on the clean pre v3 report
-crypto report generation and the committed generated proof report are not implemented yet
 
 OPEN FACTS
 
@@ -190,7 +195,7 @@ native USB controller enumeration and negotiated speed in its later stage
 
 EXACT NEXT ACTION
 
-add scripts/crypto_report.py to validate the captured COM7 self test log and size output then generate docs/generated/CRYPTO_REPORT.txt
+wait for user direction before starting /home/ishan/p4key_codex_prompt_pack/p4key_codex_prompts/prompts/03_usb_fido_hid.txt
 
 MANUAL ACTIONS STILL REQUIRED
 
@@ -206,4 +211,4 @@ NOTES
 
 never put a key nonce private scalar decrypted credential record or eFuse secret in this file
 the user removed repository planning copies in published commit 61e622a and attached prompt pack files are the stage instruction source
-Prompt 02 is in progress and Prompt 03 has not been started
+Prompt 02 is complete and Prompt 03 has not been started

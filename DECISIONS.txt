@@ -450,3 +450,70 @@ reconsider when
 a later performance stage defines a controlled measurement protocol
 
 END DECISION
+
+decision
+0015
+
+time utc
+2026 08 26 04 02 32
+
+stage
+02 crypto accelerator proof
+
+problem
+raw target logs can contain unrelated device output and concatenated sessions while a missing board run must never be mistaken for passing evidence
+
+choice
+generate a deterministic report through a whitelist parser that requires one ordered 23 test and 9 benchmark session and labels an intentionally omitted log as target data unavailable
+
+reason
+strict names counts ordering repetitions summaries configuration and size validation prevents partial stale or failing evidence from producing PASS while whitelisted extraction keeps unrelated log data out of the tracked report
+
+alternatives rejected
+copying the raw log would retain unrelated device data
+using the last result for duplicate names could accept a concatenated reboot session
+treating a supplied malformed log as unavailable would hide a reproducible failure
+requiring a target log when no board is attached would conflict with the project unavailable evidence policy
+
+files affected
+scripts/crypto_report.py
+tests/host/test_crypto_report.py
+docs/generated/CRYPTO_REPORT.txt
+
+reconsider when
+the target result grammar or required crypto test inventory changes
+
+END DECISION
+
+decision
+0016
+
+time utc
+2026 08 26 04 11 46
+
+stage
+02 crypto accelerator proof
+
+problem
+a valid target result session could come from a different application image than the supplied build evidence
+
+choice
+optionally read the ESP application image descriptor and require its full ELF SHA 256 value to begin with the boot fingerprint captured in the target log
+
+reason
+ESP IDF embeds the ELF hash in the fixed application descriptor and prints its configured prefix at boot so the comparison ties a supplied target log to a supplied build without relying on timing
+
+alternatives rejected
+leaving the two evidence files unrelated would permit stale but individually valid records
+invoking an external image inspection package would add an unnecessary environment dependency
+claiming a full cryptographic binding would overstate the strength of the nine hexadecimal character boot prefix
+
+files affected
+scripts/crypto_report.py
+tests/host/test_crypto_report.py
+docs/generated/CRYPTO_REPORT.txt
+
+reconsider when
+the ESP image descriptor layout changes or the firmware prints the complete ELF SHA 256 value
+
+END DECISION
