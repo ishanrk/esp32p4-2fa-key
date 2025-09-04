@@ -517,3 +517,36 @@ reconsider when
 the ESP image descriptor layout changes or the firmware prints the complete ELF SHA 256 value
 
 END DECISION
+
+decision
+0017
+
+time utc
+2026 08 26 04 25 21
+
+stage
+03 USB FIDO HID enumeration
+
+problem
+esp_tinyusb defaults ESP32 P4 to its high speed controller while the required board Type-C connector labeled USB is the direct USB1P1 path
+
+choice
+initialize TinyUSB with TINYUSB_CONFIG_FULL_SPEED and provide only the full speed configuration for the Type-C USB1P1 device route
+
+reason
+the board schematic identifies that connector as USB1P1 and the pinned IDF exposes it as the supported P4 OTG1.1 full speed port while the high speed route belongs to the separate Type-A jumper bank
+
+alternatives rejected
+using TINYUSB_DEFAULT_CONFIG would silently select a different controller and physical connector
+advertising high speed descriptors on the selected full speed path would state a capability that this connector does not use
+moving to the Type-A jumper bank would conflict with the user selected native Type-C device path
+
+files affected
+docs/USB_API_NOTES.txt
+components/p4_usb/p4_usb.c
+components/p4_usb/p4_usb_desc.c
+
+reconsider when
+the project deliberately changes to the board high speed Type-A device route
+
+END DECISION

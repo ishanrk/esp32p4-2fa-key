@@ -1,0 +1,115 @@
+P4KEY USB API NOTES
+
+stage 03 installed source review
+2026 08 26
+
+VERSIONS
+
+ESP IDF
+v6.0.2 checkout 7101770dc6db2667b3c477cc31365dd1acd6db4e
+
+espressif esp_tinyusb
+2.2.1 pinned exactly by main/idf_component.yml
+
+upstream TinyUSB
+0.21.0~1 selected and pinned by dependencies.lock
+
+The managed component source stays ignored. The manifest and dependency lock are
+the source controlled inputs needed to reproduce it.
+
+INSTALLED HEADERS
+
+driver configuration and initialization
+managed_components/espressif__esp_tinyusb/include/tinyusb.h
+managed_components/espressif__esp_tinyusb/include/tinyusb_default_config.h
+
+HID device calls callbacks and descriptor templates
+managed_components/espressif__tinyusb/src/class/hid/hid_device.h
+managed_components/espressif__tinyusb/src/device/usbd.h
+
+component configuration
+managed_components/espressif__esp_tinyusb/Kconfig
+managed_components/espressif__esp_tinyusb/include/tusb_config.h
+
+PINNED EXAMPLES
+
+ESP IDF HID example
+/home/ishan/esp-idf/examples/peripherals/usb/device/tusb_hid/main/tusb_hid_example_main.c
+
+TinyUSB generic input output HID example
+managed_components/espressif__tinyusb/examples/device/hid_generic_inout
+
+INITIALIZATION
+
+tinyusb_driver_install accepts a tinyusb_config_t and starts the TinyUSB device
+task. TINYUSB_CONFIG_FULL_SPEED(event_cb, event_arg) selects the ESP32 P4
+full speed port with the internal PHY. Descriptor pointers are installed through
+the descriptor member and must remain valid for the stack lifetime.
+
+Do not use TINYUSB_DEFAULT_CONFIG for this board connector. On ESP32 P4 that
+macro selects TINYUSB_PORT_HIGH_SPEED_0. The required Type-C connector labeled
+USB is routed as USB1P1 and uses TINYUSB_PORT_FULL_SPEED_0. ESP IDF v6.0.2
+defines USB_PHY_SUPPORTS_P4_OTG11 for this port.
+
+DESCRIPTORS
+
+The application supplies a device descriptor a full speed configuration
+descriptor and string pointers. It leaves the high speed configuration and
+device qualifier absent because this connector uses the full speed controller.
+The component descriptor layer owns the standard device configuration and
+string descriptor callbacks.
+
+The application provides
+
+tud_hid_descriptor_report_cb
+tud_hid_get_report_cb
+tud_hid_set_report_cb
+tud_hid_report_complete_cb when completion signaling is needed
+tud_hid_report_failed_cb when transfer failure signaling is needed
+
+tud_hid_set_report_cb receives both control SET_REPORT output and interrupt OUT
+data. For interrupt OUT TinyUSB supplies report ID zero and report type output.
+tud_hid_n_ready and tud_hid_n_report send one report on the selected interface.
+
+The esp_tinyusb component owns tud_mount_cb and tud_umount_cb. Its
+tinyusb_event_cb_t reports TINYUSB_EVENT_ATTACHED and TINYUSB_EVENT_DETACHED to
+the application. Optional suspend and resume events require their matching
+component configuration symbols.
+
+ENDPOINTS
+
+The application descriptor selects endpoint 0x01 OUT and endpoint 0x81 IN.
+Both are interrupt endpoints with 64 byte maximum packets. The installed
+TUD_HID_INOUT_DESCRIPTOR template emits the HID interface HID descriptor and
+both endpoint descriptors. TinyUSB opens and owns the endpoints from those
+bytes; project callbacks only receive or submit complete reports.
+
+The CTAP 2.2 reference descriptor uses interval value 5 for full speed which is
+one poll every 5 milliseconds. The descriptor may choose endpoint numbers and
+intervals differently but this project keeps the reference values.
+
+PHY AND SPEED
+
+The Type-C connector labeled USB is the direct USB1P1 full speed route. The
+separate Type-A jumper bank is the board high speed OTG path and is not selected.
+The active device limit for this stage is therefore USB full speed at 12 Mbit/s.
+Target enumeration must confirm full speed before the stage is complete.
+
+TASK OWNERSHIP
+
+esp_tinyusb creates the TinyUSB service task. The installed default task uses a
+4096 byte stack priority 5 and CPU1 on this two core build. USB callbacks execute
+from that task and must only do bounded nonblocking work.
+
+P4Key will copy a valid 64 byte OUT report into a static FreeRTOS queue and
+return. A separate normal application task owns diagnostic bringup and later
+CTAPHID processing. Sending may wait only from a normal task with a finite
+timeout.
+
+KNOWN LIMITS
+
+This stage proves USB HID shape and a private opt in diagnostic exchange only.
+It does not implement CTAPHID or claim FIDO behavior. USB disconnect detection
+depends on the host and controller event path and must be checked on the real
+connector. No CDC interface is enabled and no serial number derives from chip
+identity eFuse or MAC data.

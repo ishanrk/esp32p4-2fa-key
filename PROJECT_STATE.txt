@@ -1,16 +1,16 @@
 P4KEY PROJECT STATE
 
 updated utc
-2026 08 26 04 18 16
+2026 08 26 04 28 49
 
 project
 ESP32-P4 2FA Key
 
 current stage
-02 crypto accelerator proof
+03 USB FIDO HID enumeration
 
 stage status
-complete hardware TRNG SHA 256 AES 256 GCM and general P 256 paths are configured implemented tested on target and recorded in the generated proof report
+in progress official esp_tinyusb 2.2.1 is pinned resolved and inspected before descriptor implementation
 
 repository path
 /home/ishan/esp32p4-2fa-key
@@ -22,10 +22,10 @@ upstream
 origin/main
 
 local and upstream sync
-synced through acde68f with zero ahead and zero behind before the fifth stage 02 commit
+synced through 4c700b9 with zero ahead and zero behind before the first stage 03 commit
 
 last successful commit
-acde68f add crypto target tests
+4c700b9 save crypto proof repot
 
 BOARD
 
@@ -48,7 +48,7 @@ native USB device connector
 Type-C connector labeled USB with the direct module USB1P1 data path reserved as the device candidate
 
 native USB mode
-hardware mapping is documented but device stack enumeration waits for the USB stage
+the required Type-C USB1P1 route is the ESP32 P4 full speed controller and must explicitly override the component high speed default actual enumeration remains pending
 
 logging connector
 Type-C PWR USB TO UART through CH343P on GPIO37 and GPIO38 Windows COM7
@@ -80,7 +80,7 @@ target
 esp32p4 pre v3 silicon path for the attached revision 1.3 device
 
 esp tinyusb
-target 2.2.1 not added in stage 01
+2.2.1 pinned exactly with upstream TinyUSB 0.21.0~1 locked transitively
 
 esp cbor
 target 0.6.1~4 not added in stage 01
@@ -89,7 +89,7 @@ compiler
 riscv32-esp-elf-gcc 15.2.0
 
 host OS
-Ubuntu under WSL2 Linux 6.6.87.2 x86_64 with Windows COM7 bridge
+Ubuntu under WSL2 Linux 6.6.87.2 x86_64 currently sees no passed through board USB device while Windows sees the CH343 on COM7
 
 host fido tool version
 not installed
@@ -138,7 +138,7 @@ crypto proof report
 python3 scripts/crypto_report.py --sdkconfig build/crypto-test/sdkconfig --log captures/crypto-selftest-com7.log --size captures/crypto-test-size.txt --image build/crypto-test/p4key.bin --output docs/generated/CRYPTO_REPORT.txt passed with report status PASS IDF total image size 345100 bytes and a matching boot ELF fingerprint
 
 USB test
-not attempted because native USB enumeration is outside stage 01 and the cable is not visible in WSL
+pre firmware inventory sees only USB IP root hubs in WSL and the separate CH343 on Windows COM7 native device enumeration is not attempted yet
 
 FIDO test
 not attempted
@@ -179,10 +179,13 @@ normal firmware keeps crypto self tests and benchmarks disabled
 no RSA primitive or accelerator path is used because the v0.1 protocol requires ES256 only
 the report parser rejects missing failed duplicated reordered or malformed target evidence and wrong benchmark repetitions
 docs/generated/CRYPTO_REPORT.txt records only whitelisted facts and explicitly states proof limits
+esp_tinyusb 2.2.1 and its transitive TinyUSB source are pinned by the manifest and lock file
+the installed initialization descriptor HID callback PHY endpoint and task APIs are recorded in docs/USB_API_NOTES.txt
 
 WHAT IS BROKEN
 
-WSL cannot access the attached CH343 serial interface directly
+WSL currently receives neither board cable because the Windows USB devices are not attached through USB IP
+the native USB HID device is not implemented or enumerated yet
 physical PCB revision is not established
 physical BOOT pressed level is not sampled yet
 idf.py size emits a nonfatal sram_seg classification warning on the first v3 build and not on the clean pre v3 report
@@ -195,7 +198,7 @@ native USB controller enumeration and negotiated speed in its later stage
 
 EXACT NEXT ACTION
 
-wait for user direction before starting /home/ishan/p4key_codex_prompt_pack/p4key_codex_prompts/prompts/03_usb_fido_hid.txt
+add the one interface full speed FIDO HID descriptors and development USB identity without starting CTAPHID
 
 MANUAL ACTIONS STILL REQUIRED
 
@@ -211,4 +214,4 @@ NOTES
 
 never put a key nonce private scalar decrypted credential record or eFuse secret in this file
 the user removed repository planning copies in published commit 61e622a and attached prompt pack files are the stage instruction source
-Prompt 02 is complete and Prompt 03 has not been started
+Prompt 02 is complete Prompt 03 is in progress and Prompt 04 has not been started

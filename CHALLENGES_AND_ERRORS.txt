@@ -889,3 +889,38 @@ next action
 rerun the report and full host suites then request final independent verification
 
 END ENTRY
+
+entry
+0026
+
+time utc
+2026 08 26 04 25 21
+
+stage
+03 USB FIDO HID enumeration
+
+action
+recheck the connected board from WSL first after the user reported the microcontroller had been unplugged during an earlier probe
+
+observed
+lsusb listed only Linux Foundation root hubs and find reported /dev/serial does not exist while Windows listed USB Enhanced SERIAL CH343 on COM7
+
+cause
+the board is now connected to Windows but neither board cable is attached to WSL through USB IP and the earlier root hub only observation cannot prove the same physical state because the user reports the board was unplugged then
+
+fix tried
+used WSL first and performed one read only Windows inventory only after the same access issue recurred
+
+result
+partly fixed
+
+commit
+pending pin tinyusb device component
+
+regression test
+none until USB firmware is flashed and the native connector enumerates
+
+next action
+use WSL for builds and tests then use the proven reversible COM7 bridge only when target flashing is needed
+
+END ENTRY
