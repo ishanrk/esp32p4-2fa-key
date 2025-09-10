@@ -550,3 +550,68 @@ reconsider when
 the project deliberately changes to the board high speed Type-A device route
 
 END DECISION
+
+decision
+0018
+
+time utc
+2026 08 26 04 35 09
+
+stage
+03 USB FIDO HID enumeration
+
+problem
+the first USB baseline needs a host identity without borrowing another authenticator vendor identity or leaking a stable hardware identifier
+
+choice
+use the pinned component documented Espressif development VID 0x303a and HID only PID 0x4004 behind project Kconfig and set the device serial string index to zero
+
+reason
+the component explicitly permits this VID for development and documents the HID product bit while no serial avoids exposing a MAC chip ID eFuse value or credential derived identity
+
+alternatives rejected
+using a commercial authenticator VID would misrepresent ownership
+using an undocumented lab identity is unnecessary while the component provides an explicit development policy
+using the component default descriptor would expose its fixed 123456 serial string
+
+files affected
+components/p4_usb/Kconfig
+components/p4_usb/p4_usb_desc.c
+docs/USB_ID_NOTICE.txt
+
+reconsider when
+an assigned product VID and PID or authorized sublicense is available before shipment
+
+END DECISION
+
+decision
+0019
+
+time utc
+2026 08 26 04 35 09
+
+stage
+03 USB FIDO HID enumeration
+
+problem
+descriptor macros can hide the exact on wire byte sequence from source only host tests and the selected connector must not acquire a high speed descriptor through a chip wide compile time capability macro
+
+choice
+store the 34 byte HID report and 41 byte full speed configuration as literal constant arrays with compile time size checks and provide no high speed configuration or qualifier
+
+reason
+literal arrays let CI parse the actual maintained bytes while the Type-C USB1P1 route is full speed only and esp_tinyusb accepts a full speed descriptor alone on that port
+
+alternatives rejected
+relying only on convenience macros would make source inspection depend on preprocessing managed component headers
+using TUD_OPT_HIGH_SPEED to add another descriptor would confuse a chip capability with the runtime selected port
+providing both speeds would advertise an unused board path
+
+files affected
+components/p4_usb/include/p4_usb_desc.h
+components/p4_usb/p4_usb_desc.c
+
+reconsider when
+the selected physical connector or host descriptor test strategy changes
+
+END DECISION

@@ -26,8 +26,8 @@ FACT TABLE
 | module | ESP32-P4-Module with ESP32-P4NRW32 | module shield text in the board photo and official product page | high | none |
 | chip revision | v1.3 | esptool direct probe and baseline bootloader and app output in docs/BOOT_SAMPLE.txt | high | none |
 | module memory | 32 MiB stacked PSRAM and 16 MiB external Nor flash | official product page plus runtime 33554432 and 16777216 byte queries | high | none |
-| native USB device candidate | Type-C connector labeled USB | photo label and schematic H2 direct USB1P1 data pair | high for wiring medium for controller mode | verify with the IDF USB device stack before Prompt 03 |
-| USB data controller | direct ESP32-P4 module USB1P1 path | schematic H2 to module USB1P1_P and USB1P1_N | medium | confirm the IDF controller instance and speed on target |
+| native USB device connector | Type-C connector labeled USB | photo label and schematic H2 direct USB1P1 data pair | high | enumerate the Prompt 03 firmware on this connector |
+| USB data controller | ESP32-P4 OTG1.1 full speed controller on the direct module USB1P1 path | schematic H2 wiring plus ESP-IDF v6.0.2 P4 OTG1.1 support and esp_tinyusb 2.2.1 port definitions | high | prove 12 Mbit/s enumeration on target |
 | separate logging and flashing | Type-C PWR USB TO UART through CH343P on GPIO37 and GPIO38 | photo label schematic USB to UART block and Windows PnP | high | use COM7 while attached to Windows |
 | native OTG alternatives | Type-A USB 2.0 high-speed bank with HOST DEVICE jumper | official product page and board photo | high | leave unused for the first direct device baseline |
 | buttons | BOOT and RST | board photo and official product page | high | none |
@@ -35,7 +35,7 @@ FACT TABLE
 | button active level | active low with idle raw level 1 | schematic switch closes GPIO35 to GND and baseline boot output | high for wiring and idle | manually sample raw level while pressed |
 | external button pull | no discrete pull shown at Key2 so the firmware enables the internal pull up | official schematic BOOT block and stable runtime idle level 1 | high | none |
 | dual cable power | USB0_5V and USB1_5V feed the common VCC_5V power path through the board power selection network | official schematic POWER block | high | use host powered cables and avoid an extra 5 V header source |
-| high speed USB hardware | board advertises USB OTG 2.0 high speed and exposes the host device jumper bank | official product page | high | confirm selected connector speed during USB bringup |
+| high speed USB hardware | the separate Type-A jumper bank exposes the board high speed path but is not the selected Prompt 03 connector | official product page and schematic | high | leave this route unused during the full speed Type-C baseline |
 | flash and NVS | 16 MiB flash; NVS offset 0x9000 size 24 KiB; phy_init 0xf000 size 4 KiB; factory app 0x10000 size 1 MiB | runtime flash query generated partition table and captured boot table | high | revisit the table only when storage requirements change |
 
 RUNTIME BASELINE
@@ -83,3 +83,15 @@ transposition table bytes
 
 The old firmware does not expose silicon revision flash size or PSRAM through its protocol.
 No flash erase eFuse write security feature or other irreversible action was performed.
+
+PROMPT 03 CABLE AND POWER ARRANGEMENT
+
+Use a known data-capable Type-C cable from the connector labeled USB to the
+host for native FIDO HID traffic. This connector is the direct USB1P1 full
+speed path. Do not use the Type-A high speed jumper bank for this baseline.
+
+Keep a second known data-capable Type-C cable from PWR USB TO UART to the host
+for CH343 flashing and logs. Windows currently identifies that path as COM7.
+Both USB inputs join the board 5 V power network through its power selection
+circuit, so do not add another 5 V header source. Enumeration must establish
+that the native cable carries data; cable shape alone is not proof.

@@ -1,0 +1,27 @@
+menu "P4Key USB"
+
+config P4KEY_USB_VID
+    hex "Development USB vendor ID"
+    range 0x0001 0xfffe
+    default 0x303a
+    help
+        Espressif's development VID is explicitly allowed by esp_tinyusb.
+        This value is not a product shipment identity.
+
+config P4KEY_USB_PID
+    hex "Development USB product ID"
+    range 0x0001 0xfffe
+    default 0x4004
+    help
+        0x4004 is esp_tinyusb's HID-only development product mapping.
+        Replace VID and PID with assigned product values before shipment.
+
+config P4KEY_USB_BRINGUP
+    bool "Enable the fixed USB bringup exchange"
+    default n
+    help
+        Start a diagnostic task that accepts one exact nonsecret report and
+        returns one exact nonsecret response. Never enable this in a normal
+        FIDO firmware build.
+
+endmenu
