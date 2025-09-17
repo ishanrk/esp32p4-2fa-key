@@ -1,7 +1,7 @@
 P4KEY PROJECT STATE
 
 updated utc
-2026 08 26 04 35 09
+2026 08 26 04 58 38
 
 project
 ESP32-P4 2FA Key
@@ -10,7 +10,7 @@ current stage
 03 USB FIDO HID enumeration
 
 stage status
-in progress the exact FIDO shaped descriptors and development USB identity pass a clean pre v3 build with the bounded report transport next
+in progress the bounded generation tagged USB report path and opt in fixed bringup exchange pass normal and bringup pre v3 builds with host inspection tools next
 
 repository path
 /home/ishan/esp32p4-2fa-key
@@ -22,10 +22,10 @@ upstream
 origin/main
 
 local and upstream sync
-synced through 656e55e with zero ahead and zero behind before the second stage 03 commit
+synced through f5c0cd1 with zero ahead and zero behind before the third stage 03 commit
 
 last successful commit
-656e55e pin tinyusb device component
+f5c0cd1 add fido hid descriptors
 
 BOARD
 
@@ -114,7 +114,10 @@ not performed
 LAST SUCCESSFUL COMMANDS
 
 firmware build
-source /home/ishan/esp-idf/export.sh then idf.py -B build/usb-descriptor -D SDKCONFIG=build/usb-descriptor/sdkconfig -D SDKCONFIG_DEFAULTS=sdkconfig.defaults build and size passed with total image size 199982 bytes and 81 percent app partition free
+source /home/ishan/esp-idf/export.sh then scripts/build.sh passed with total image size 235524 bytes and 78 percent app partition free SHA 256 d7ab3331c0c33be06b5768523aa75f9569d339507751274e3754ab2bc847824b
+
+USB bringup firmware build
+source /home/ishan/esp-idf/export.sh then scripts/build_usb_bringup.sh passed with total image size 238128 bytes and 77 percent app partition free SHA 256 3cd76f7a9a3a9b01c7fc0d7cd392ff63c337cdcc47edbaff2c5c299eb3246e00
 
 crypto target profile build
 source /home/ishan/esp-idf/export.sh then scripts/build_crypto_test.sh passed with total image size 345100 bytes 67 percent app partition free and p4key.bin SHA 256 ed029db92ca0b3171bef9f11562b76b7cab4a197d70926baeb1abee7af2de783
@@ -138,7 +141,7 @@ crypto proof report
 python3 scripts/crypto_report.py --sdkconfig build/crypto-test/sdkconfig --log captures/crypto-selftest-com7.log --size captures/crypto-test-size.txt --image build/crypto-test/p4key.bin --output docs/generated/CRYPTO_REPORT.txt passed with report status PASS IDF total image size 345100 bytes and a matching boot ELF fingerprint
 
 USB test
-the source report descriptor exact byte check passed at 34 bytes and the clean build configuration has one HID class with CDC MSC MIDI DFU Bluetooth network and vendor classes disabled target enumeration is not attempted yet
+the source report descriptor exact byte check passed at 34 bytes both clean configurations have one HID class with other device classes disabled the ring compiles on the host with Wall Wextra Werror and strings proves the fixed exchange is present only in the bringup image target enumeration is not attempted yet
 
 FIDO test
 not attempted
@@ -185,11 +188,18 @@ the source controlled report descriptor is exactly 34 bytes with the required FI
 the full speed configuration descriptor is exactly 41 bytes with one class 03 subclass 00 protocol 00 interface and interrupt endpoints 0x01 and 0x81 at 64 bytes interval 5
 the device identity is the documented development pair 303a 4004 with no USB serial and its non shipment status is recorded
 the clean descriptor build selects one HID interface and disables every other TinyUSB device class
+the normal application starts esp_tinyusb on the explicit full speed port only after crypto initialization
+the receive callback checks interface report ID type and exact 64 byte length then performs one bounded copy without blocking allocation crypto storage button work parsing or packet logging
+the fixed receive ring has eight generation tagged slots and rejects the newest report on full without overwriting unread data
+detach marks USB unavailable increments the generation empties the ring invalidates an in hand reply and wakes blocked receive and send paths
+suspend conservatively advances the same connectivity generation because separate UART power remains present and no native connector VBUS monitor GPIO is routed
+usb_take and usb_send use one finite overall deadline and reject disconnect timeout or a response from an older connectivity generation
+the statically allocated bringup task responds only to one exact nonsecret 64 byte request and is absent with both request and response strings from the normal image
 
 WHAT IS BROKEN
 
 WSL currently receives neither board cable because the Windows USB devices are not attached through USB IP
-the bounded USB receive and send path is not implemented or enumerated yet
+the USB host inspection scripts source policy tests and target enumeration evidence are not implemented yet
 physical PCB revision is not established
 physical BOOT pressed level is not sampled yet
 idf.py size emits a nonfatal sram_seg classification warning on the first v3 build and not on the clean pre v3 report
@@ -202,7 +212,7 @@ native USB controller enumeration and negotiated speed in its later stage
 
 EXACT NEXT ACTION
 
-wire the static depth eight receive queue finite transmit coordination TinyUSB full speed start and opt in fixed bringup task without CTAPHID
+add strict source descriptor configuration queue and mocked HID host checks plus explicit discovery descriptor and probe tools without touching hardware
 
 MANUAL ACTIONS STILL REQUIRED
 

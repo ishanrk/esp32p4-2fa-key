@@ -924,3 +924,108 @@ next action
 use WSL for builds and tests then use the proven reversible COM7 bridge only when target flashing is needed
 
 END ENTRY
+
+entry
+0027
+
+time utc
+2026 08 26 04 51 06
+
+stage
+03 USB FIDO HID enumeration
+
+action
+independently review the finite usb_send deadline across mutex ownership and endpoint readiness waits
+
+observed
+the first implementation called xTaskCheckForTimeOut after acquiring the transmit mutex but ignored a true result and retried endpoint submission immediately after a blocking wake timeout
+
+cause
+the deadline result updated the remaining tick variable but the send attempt occurred before that result controlled the loop
+
+fix tried
+reject an exhausted positive timeout immediately after mutex acquisition and immediately after every endpoint wake while preserving one nonblocking attempt only for an explicit zero wait
+
+result
+fixed and both normal and bringup builds pass
+
+commit
+pending wire bounded usb reports
+
+regression test
+the stage 03 host checks must retain a source policy assertion for deadline checks after both blocking operations
+
+next action
+add the regression with the other Prompt 03 host checks before target flashing
+
+END ENTRY
+
+entry
+0028
+
+time utc
+2026 08 26 04 51 06
+
+stage
+03 USB FIDO HID enumeration
+
+action
+independently review USB ready state across suspend and resume before target enumeration
+
+observed
+the first implementation set ready true on every resume event even though a connected or addressed device is not necessarily configured and HID mounted
+
+cause
+resume was treated as proof of mount instead of a bus power state transition
+
+fix tried
+track mount state separately set it only on attached clear it on detached and restore ready on resume only when that tracked mount remains true
+
+result
+fixed and both normal and bringup builds pass
+
+commit
+pending wire bounded usb reports
+
+regression test
+the stage 03 host checks must retain a source policy assertion that resume gates ready on tracked mount state
+
+next action
+add the regression with the other Prompt 03 host checks before target flashing
+
+END ENTRY
+
+entry
+0029
+
+time utc
+2026 08 26 04 55 36
+
+stage
+03 USB FIDO HID enumeration
+
+action
+independently review the finite usb_take deadline around its receive wake
+
+observed
+the implementation ignored the return from xSemaphoreTake s_rx_wake and looped to pop before checking elapsed time so a report queued after the deadline but before the task ran again could be returned as successful
+
+cause
+the receive loop checked the deadline before blocking but did not make the blocking result and elapsed deadline gate the next queue access
+
+fix tried
+return timeout when the receive semaphore wait expires and check the overall deadline immediately after every successful positive duration wake before another queue pop
+
+result
+fixed and both normal and bringup builds pass
+
+commit
+pending wire bounded usb reports
+
+regression test
+the stage 03 host checks must retain a source policy assertion that a receive wake cannot bypass the overall deadline
+
+next action
+add the regression with the other Prompt 03 host checks before target flashing
+
+END ENTRY

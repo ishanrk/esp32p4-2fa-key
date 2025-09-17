@@ -615,3 +615,102 @@ reconsider when
 the selected physical connector or host descriptor test strategy changes
 
 END DECISION
+
+decision
+0020
+
+time utc
+2026 08 26 04 48 24
+
+stage
+03 USB FIDO HID enumeration
+
+problem
+the TinyUSB task must hand complete reports to one application consumer without heap allocation blocking overwrite or a stale response after physical reconnect
+
+choice
+use a statically allocated depth eight ring with a generation in every slot reject the newest report on full and require usb_send to match the generation remembered by the last successful usb_take
+
+reason
+eight slots cost 544 bytes and absorb a short host burst while remaining small and deterministic and the generation closes the gap where a task holds a request across detach and remount
+
+alternatives rejected
+overwriting the oldest slot would silently destroy an unread report
+allocating per report would make callback memory use input dependent
+sampling the generation only when send begins would allow a pre disconnect request to be answered after remount
+blocking in the TinyUSB task would delay endpoint service
+
+files affected
+components/p4_usb/p4_usb_queue.c
+components/p4_usb/p4_usb.c
+components/p4_usb/include/p4_usb.h
+
+reconsider when
+the later CTAPHID task model needs more than one receive consumer or independent unsolicited transmitters
+
+END DECISION
+
+decision
+0021
+
+time utc
+2026 08 26 04 48 24
+
+stage
+03 USB FIDO HID enumeration
+
+problem
+the stage needs a bidirectional hardware proof but a private diagnostic exchange must not survive into normal FIDO firmware
+
+choice
+compile one exact request and distinct response plus a statically allocated consumer task only when CONFIG_P4KEY_USB_BRINGUP is enabled through a separate build profile
+
+reason
+an explicit profile makes the reversible proof reproducible while binary string inspection can prove the request response and task messages are absent from the normal image
+
+alternatives rejected
+echoing arbitrary packets would create an unsafe protocol and hide direction mistakes
+leaving the fixed exchange in normal firmware would make a private command part of the product behavior
+starting the task dynamically would add avoidable heap use
+
+files affected
+main/app_main.c
+sdkconfig.usb-bringup.defaults
+scripts/build_usb_bringup.sh
+
+reconsider when
+Prompt 03 hardware proof is complete and the bringup profile can remain only as a regression fixture
+
+END DECISION
+
+decision
+0022
+
+time utc
+2026 08 26 04 55 36
+
+stage
+03 USB FIDO HID enumeration
+
+problem
+the board remains powered through PWR USB TO UART and its native USB connector VBUS is not routed to a valid ESP32 P4 GPIO monitor so a cable removal may first appear as suspend instead of detach
+
+choice
+make suspend a conservative connectivity generation boundary that marks the path unavailable clears queued reports and invalidates an in hand reply while retaining separate suspend and unmount diagnostic counts
+
+reason
+no request received before an unobservable cable gap may be answered after resume and ordinary host suspend can safely make the later host retry its request
+
+alternatives rejected
+inventing a VBUS monitor GPIO would conflict with the actual schematic
+keeping a held generation across suspend could answer a request from before a physical disconnect
+counting every suspend as unmount would make diagnostics inaccurate
+
+files affected
+components/p4_usb/p4_usb.c
+docs/USB_API_NOTES.txt
+
+reconsider when
+a valid hardware VBUS monitor route is established or target evidence proves a stronger disconnect event path
+
+END DECISION

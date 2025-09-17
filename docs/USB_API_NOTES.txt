@@ -101,15 +101,31 @@ esp_tinyusb creates the TinyUSB service task. The installed default task uses a
 4096 byte stack priority 5 and CPU1 on this two core build. USB callbacks execute
 from that task and must only do bounded nonblocking work.
 
-P4Key will copy a valid 64 byte OUT report into a static FreeRTOS queue and
-return. A separate normal application task owns diagnostic bringup and later
-CTAPHID processing. Sending may wait only from a normal task with a finite
-timeout.
+P4Key copies a valid 64 byte OUT report into a static depth eight ring and
+signals a static binary semaphore before returning. The ring occupies 544
+bytes including an unmount generation on every slot. Eight slots absorb a
+short host burst while keeping memory fixed. When full it rejects the newest
+report and preserves every unread report.
+
+A separate normal application task owns diagnostic bringup and later CTAPHID
+processing. One static mutex serializes transmitters. Sending may wait only
+from a normal task with one finite overall timeout. Completion disconnect and
+resume callbacks wake that path without logging packet bytes.
+
+Every accepted receive report carries the current unmount generation. A
+successful take remembers that generation and usb_send rejects a reply after
+disconnect. Detach increments the generation clears the ring marks USB not
+ready and wakes blocked tasks. Attach also starts with an empty ring. This
+dual powered board has no valid routed GPIO for a native connector VBUS
+monitor, so suspend conservatively advances the same connectivity generation
+and drops queued or held work. Resume restores readiness only when the stack
+still reports the device configured.
 
 KNOWN LIMITS
 
 This stage proves USB HID shape and a private opt in diagnostic exchange only.
 It does not implement CTAPHID or claim FIDO behavior. USB disconnect detection
 depends on the host and controller event path and must be checked on the real
-connector. No CDC interface is enabled and no serial number derives from chip
-identity eFuse or MAC data.
+connector. A target unplug test must record whether the stack reports detach or
+suspend while separate UART power remains connected. No CDC interface is
+enabled and no serial number derives from chip identity eFuse or MAC data.

@@ -5,13 +5,78 @@
 #include "p4_crypto_test.h"
 #endif
 #include "p4_state.h"
+#include "p4_usb.h"
 
 #include "esp_err.h"
 #include "esp_log.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 
+#if CONFIG_P4KEY_USB_BRINGUP
+#include <string.h>
+
+#define USB_BRINGUP_STACK_BYTES 3072
+
+static StaticTask_t s_usb_bringup_task_storage;
+static StackType_t
+    s_usb_bringup_stack[USB_BRINGUP_STACK_BYTES / sizeof(StackType_t)];
+
+static const uint8_t s_usb_bringup_request[P4_USB_REPORT_BYTES] =
+    "P4KEY USB BRINGUP REQUEST v1";
+static const uint8_t s_usb_bringup_response[P4_USB_REPORT_BYTES] =
+    "P4KEY USB BRINGUP RESPONSE v1";
+
+_Static_assert(USB_BRINGUP_STACK_BYTES % sizeof(StackType_t) == 0,
+               "USB bringup stack alignment");
+#endif
+
 static const char *tag = "p4key";
+
+
+#if CONFIG_P4KEY_USB_BRINGUP
+static void usb_bringup_task(void *arg)
+{
+    (void)arg;
+    uint8_t report[P4_USB_REPORT_BYTES];
+
+    for (;;) {
+        int err = usb_take(report, 1000);
+        if (err == P4_USB_ERR_DISCONNECTED) {
+            vTaskDelay(pdMS_TO_TICKS(100));
+            continue;
+        }
+        if (err != P4_USB_OK) {
+            continue;
+        }
+
+        if (memcmp(report, s_usb_bringup_request, sizeof(report)) != 0) {
+            continue;
+        }
+
+        err = usb_send(s_usb_bringup_response, 1000);
+        if (err == P4_USB_OK) {
+            ESP_LOGI(tag, "fixed USB bringup exchange complete");
+        } else {
+            ESP_LOGW(tag, "fixed USB bringup response failed (%d)", err);
+        }
+        usb_diag_print();
+    }
+}
+
+
+static bool usb_bringup_start(void)
+{
+    TaskHandle_t task = xTaskCreateStatic(
+        usb_bringup_task,
+        "usb_bringup",
+        sizeof(s_usb_bringup_stack) / sizeof(s_usb_bringup_stack[0]),
+        NULL,
+        tskIDLE_PRIORITY + 2,
+        s_usb_bringup_stack,
+        &s_usb_bringup_task_storage);
+    return task != NULL;
+}
+#endif
 
 
 void app_main(void)
@@ -52,6 +117,20 @@ void app_main(void)
     } else {
         ESP_LOGW(tag, "button GPIO is not configured");
     }
+
+    int usb_err = usb_start();
+    if (usb_err != P4_USB_OK) {
+        ESP_LOGE(tag, "USB initialization failed (%d)", usb_err);
+        return;
+    }
+
+#if CONFIG_P4KEY_USB_BRINGUP
+    if (!usb_bringup_start()) {
+        ESP_LOGE(tag, "USB bringup task creation failed");
+        return;
+    }
+    ESP_LOGW(tag, "fixed USB bringup exchange is enabled");
+#endif
 
     for (;;) {
         vTaskDelay(pdMS_TO_TICKS(1000));
