@@ -1,7 +1,7 @@
 P4KEY PROJECT STATE
 
 updated utc
-2026 08 26 04 58 38
+2026 08 26 05 27 46
 
 project
 ESP32-P4 2FA Key
@@ -10,7 +10,7 @@ current stage
 03 USB FIDO HID enumeration
 
 stage status
-in progress the bounded generation tagged USB report path and opt in fixed bringup exchange pass normal and bringup pre v3 builds with host inspection tools next
+in progress the bounded USB path strict host checks and explicit live tools pass with the pre v3 bringup image target flash and enumeration next
 
 repository path
 /home/ishan/esp32p4-2fa-key
@@ -22,10 +22,10 @@ upstream
 origin/main
 
 local and upstream sync
-synced through f5c0cd1 with zero ahead and zero behind before the third stage 03 commit
+synced through 22b567c with zero ahead and zero behind before the fourth stage 03 commit
 
 last successful commit
-f5c0cd1 add fido hid descriptors
+22b567c wire bounded usb reports
 
 BOARD
 
@@ -123,7 +123,7 @@ crypto target profile build
 source /home/ishan/esp-idf/export.sh then scripts/build_crypto_test.sh passed with total image size 345100 bytes 67 percent app partition free and p4key.bin SHA 256 ed029db92ca0b3171bef9f11562b76b7cab4a197d70926baeb1abee7af2de783
 
 host unit tests
-python3 -m unittest discover -s tests/host -v passed 16 tests including 11 strict crypto report fixtures
+python3 -m unittest discover -s tests/host -v passed 31 tests including 15 USB source queue policy and mocked HID checks
 
 p256 pure helper checks
 python3 -m unittest discover -s tests/host -v compiles p4_crypto_p256_util.c with Wall Wextra Werror and runs fixed scalar range and canonical DER cases
@@ -141,7 +141,7 @@ crypto proof report
 python3 scripts/crypto_report.py --sdkconfig build/crypto-test/sdkconfig --log captures/crypto-selftest-com7.log --size captures/crypto-test-size.txt --image build/crypto-test/p4key.bin --output docs/generated/CRYPTO_REPORT.txt passed with report status PASS IDF total image size 345100 bytes and a matching boot ELF fingerprint
 
 USB test
-the source report descriptor exact byte check passed at 34 bytes both clean configurations have one HID class with other device classes disabled the ring compiles on the host with Wall Wextra Werror and strings proves the fixed exchange is present only in the bringup image target enumeration is not attempted yet
+python3 scripts/usb_desc_check.py passed exact source report configuration Kconfig class isolation finite deadline and mount gated resume checks without hidapi installed target enumeration is not attempted yet
 
 FIDO test
 not attempted
@@ -195,11 +195,16 @@ detach marks USB unavailable increments the generation empties the ring invalida
 suspend conservatively advances the same connectivity generation because separate UART power remains present and no native connector VBUS monitor GPIO is routed
 usb_take and usb_send use one finite overall deadline and reject disconnect timeout or a response from an older connectivity generation
 the statically allocated bringup task responds only to one exact nonsecret 64 byte request and is absent with both request and response strings from the normal image
+the pure Python source checker requires the exact 34 report bytes 41 configuration bytes one HID and no other USB class while live reconstructed descriptors must match all FIDO semantics
+the host suite compiles and runs the actual C depth eight ring including reject newest overflow FIFO wrap empty and reset behavior
+usb_find asks HIDAPI only for the selected VID PID and rejects exposed mismatching interface or usage facts before opening a candidate
+hid_probe requires an explicit bringup or normal no response mode validates the selected report descriptor before writing a host only report ID prefix plus exactly 64 bytes reads exactly 64 with a finite timeout and closes on every exit
+hidapi 0.15.0 is the sole pinned host dependency and is loaded only by explicit live modes
 
 WHAT IS BROKEN
 
 WSL currently receives neither board cable because the Windows USB devices are not attached through USB IP
-the USB host inspection scripts source policy tests and target enumeration evidence are not implemented yet
+target USB enumeration endpoint round trip normal no response and unplug replug evidence remain pending
 physical PCB revision is not established
 physical BOOT pressed level is not sampled yet
 idf.py size emits a nonfatal sram_seg classification warning on the first v3 build and not on the clean pre v3 report
@@ -212,7 +217,7 @@ native USB controller enumeration and negotiated speed in its later stage
 
 EXACT NEXT ACTION
 
-add strict source descriptor configuration queue and mocked HID host checks plus explicit discovery descriptor and probe tools without touching hardware
+flash the exact usb bringup image normally without force or whole flash erase on COM7 then probe the native connector from WSL first and use Windows only if the same access issue remains
 
 MANUAL ACTIONS STILL REQUIRED
 

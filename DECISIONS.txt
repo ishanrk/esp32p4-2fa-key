@@ -714,3 +714,41 @@ reconsider when
 a valid hardware VBUS monitor route is established or target evidence proves a stronger disconnect event path
 
 END DECISION
+
+decision
+0023
+
+time utc
+2026 08 26 05 13 35
+
+stage
+03 USB FIDO HID enumeration
+
+problem
+CI needs exact descriptor and queue checks without hardware while live Windows validation can expose only a reconstructed HID descriptor and raw reports require one small host dependency
+
+choice
+use one strict pure Python source parser and actual host compiled C ring test then load hidapi 0.15.0 only for explicit VID PID filtered live discovery descriptor or probe modes
+
+reason
+source checks remain deterministic without package installation while live tools use filtered enumeration reject exposed mismatching interface or usage facts and validate the report descriptor before writing and Windows semantic reconstruction is not mistaken for the original bytes
+
+alternatives rejected
+requiring hardware or hidapi for source tests would make ordinary CI unavailable
+using a FIDO client library would add protocol behavior before CTAPHID exists
+comparing Windows reconstructed bytes exactly would reject logically identical descriptors
+opening every HID to find a matching usage could touch unrelated input devices
+
+files affected
+scripts/usb_common.py
+scripts/usb_find.py
+scripts/usb_desc_check.py
+scripts/hid_probe.py
+tests/host/test_usb.py
+requirements-host.txt
+docs/USB_TEST.txt
+
+reconsider when
+the host library stops exposing required report descriptor semantics or a maintained smaller raw HID package is selected
+
+END DECISION

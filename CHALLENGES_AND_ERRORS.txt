@@ -1029,3 +1029,178 @@ next action
 add the regression with the other Prompt 03 host checks before target flashing
 
 END ENTRY
+
+entry
+0030
+
+time utc
+2026 08 26 05 13 35
+
+stage
+03 USB FIDO HID enumeration
+
+action
+review the live HID descriptor check against the Windows HIDAPI reconstruction behavior
+
+observed
+the first semantic live path still rejected every descriptor whose encoded length was not exactly 34 even when its parsed usage collection input output size count and report ID facts matched
+
+cause
+the exact source byte length check was outside the require exact branch shared with live host validation
+
+fix tried
+keep byte identity and 34 byte length mandatory for the source array while allowing a live reconstructed descriptor with a different encoding to pass only when every required semantic fact matches
+
+result
+fixed and the full host suite passes
+
+commit
+pending add usb host checks
+
+regression test
+test_live_check_accepts_semantically_equivalent_reconstruction uses equal Usage Minimum and Usage Maximum items and requires semantic live acceptance while exact source validation rejects it
+
+next action
+run the strict source and full host checks before the fourth stage commit
+
+END ENTRY
+
+entry
+0031
+
+time utc
+2026 08 26 05 14 42
+
+stage
+03 USB FIDO HID enumeration
+
+action
+run the delegated host test file after adding the live reconstruction regression
+
+observed
+python3 -m unittest discover -s tests/host -v failed to import test_usb.py with IndentationError unexpected indent at line 309
+
+cause
+the new test was inserted between an existing mutation assertion block and the loop body that owned that block
+
+fix tried
+move the semantic mutation assertions back inside their original subtest loop and leave the new reconstruction check as a separate method
+
+result
+fixed and the narrow USB suite passes 14 tests
+
+commit
+pending add usb host checks
+
+regression test
+python3 -m py_compile tests/host/test_usb.py and full unittest discovery both import and execute the file
+
+next action
+rerun all 30 host tests and source checks before the fourth stage commit
+
+END ENTRY
+
+entry
+0032
+
+time utc
+2026 08 26 05 22 41
+
+stage
+03 USB FIDO HID enumeration
+
+action
+independently review which HID record the live tools may open or write
+
+observed
+the first probe selected a record by VID PID and optional path then wrote without checking its exposed usage or opened report descriptor and usb_find opened every same VID PID record to request its descriptor
+
+cause
+device identity filtering and FIDO interface validation were treated as the same check even though one development VID PID can expose more than one HID record
+
+fix tried
+reject explicit interface usage page or usage mismatches before open and require the selected report descriptor to pass all FIDO semantic checks before hid_probe writes
+
+result
+fixed and the narrow USB suite passes 15 tests
+
+commit
+pending add usb host checks
+
+regression test
+the fake HID backend includes a same VID PID wrong usage record that is neither listed nor opened and the wrong descriptor mode closes without any write
+
+next action
+rerun the full host suite and final independent review before the fourth stage commit
+
+END ENTRY
+
+entry
+0033
+
+time utc
+2026 08 26 05 22 41
+
+stage
+03 USB FIDO HID enumeration
+
+action
+independently mutate every maintained USB descriptor field and collection boundary checked by the host tool
+
+observed
+the first semantic checker accepted configuration value zero interface number seven alternate setting one endpoint attributes ff HID subordinate type 23 and input output items placed after the application collection ended
+
+cause
+the checker compared only class endpoint transfer low bits sizes and top level collection count instead of the complete maintained descriptor contract and did not retain collection membership on report items
+
+fix tried
+require configuration one interface zero alternate zero HID 1.11 exact report subordinate descriptor and exact interrupt attributes then tag each report with its enclosing FIDO application collection and support equal Usage Minimum and Usage Maximum reconstruction
+
+result
+fixed and every planted descriptor mutation is rejected while a realistic Windows style semantic reconstruction passes only live mode
+
+commit
+pending add usb host checks
+
+regression test
+strict configuration mutation report outside collection and equal Usage Minimum Usage Maximum cases execute against the actual source descriptors
+
+next action
+rerun the full host suite and final independent review before the fourth stage commit
+
+END ENTRY
+
+entry
+0034
+
+time utc
+2026 08 26 05 26 37
+
+stage
+03 USB FIDO HID enumeration
+
+action
+independently test HID global PUSH and POP state handling in the live descriptor gate before hid_probe writes
+
+observed
+inserting 05 01 a4 06 d0 f1 b4 after the application collection made the real usage page Generic Desktop after POP but the first parser ignored both stack items and returned no errors
+
+cause
+the semantic parser tracked selected global values but did not preserve or restore them for the HID global state stack
+
+fix tried
+implement balanced PUSH and POP for usage page logical bounds report size and report count and reject stack underflow unterminated state at descriptor end or data on a stack item
+
+result
+fixed and the planted state stack bypass is rejected
+
+commit
+pending add usb host checks
+
+regression test
+the report mutation suite rejects the wrong page restored through POP and the reconstructed live variant proves one valid balanced global state detour still passes
+
+next action
+rerun the full host suite and final independent review before the fourth stage commit
+
+END ENTRY
