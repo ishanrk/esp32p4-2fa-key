@@ -27,7 +27,7 @@ FACT TABLE
 | chip revision | v1.3 | esptool direct probe and baseline bootloader and app output in docs/BOOT_SAMPLE.txt | high | none |
 | module memory | 32 MiB stacked PSRAM and 16 MiB external Nor flash | official product page plus runtime 33554432 and 16777216 byte queries | high | none |
 | native USB device connector | Type-C connector labeled USB | photo label and schematic H2 direct USB1P1 data pair | high | enumerate the Prompt 03 firmware on this connector |
-| USB data controller | ESP32-P4 OTG1.1 full speed controller on the direct module USB1P1 path | schematic H2 wiring plus ESP-IDF v6.0.2 P4 OTG1.1 support and esp_tinyusb 2.2.1 port definitions | high | prove 12 Mbit/s enumeration on target |
+| USB data controller | H2 is FS PHY0 on GPIO24 and GPIO25 which defaults to USB Serial JTAG; firmware must reversibly route OTG1.1 USB WRAP to PHY0 before TinyUSB starts | schematic H2 wiring installed ESP-IDF v6.0.2 PHY selector and live change from 303a 1001 to healthy 303a 4004 | high | powered physical remount validation is deferred and not passed |
 | separate logging and flashing | Type-C PWR USB TO UART through CH343P on GPIO37 and GPIO38 | photo label schematic USB to UART block and Windows PnP | high | use COM7 while attached to Windows |
 | native OTG alternatives | Type-A USB 2.0 high-speed bank with HOST DEVICE jumper | official product page and board photo | high | leave unused for the first direct device baseline |
 | buttons | BOOT and RST | board photo and official product page | high | none |
@@ -88,7 +88,10 @@ PROMPT 03 CABLE AND POWER ARRANGEMENT
 
 Use a known data-capable Type-C cable from the connector labeled USB to the
 host for native FIDO HID traffic. This connector is the direct USB1P1 full
-speed path. Do not use the Type-A high speed jumper bank for this baseline.
+speed PHY0 path on GPIO24 and GPIO25. At reset PHY0 exposes USB Serial JTAG;
+the application uses the ESP-IDF software selector to move OTG1.1 USB WRAP to
+PHY0 without changing eFuses. Do not use the Type-A high speed jumper bank for
+this baseline.
 
 Keep a second known data-capable Type-C cable from PWR USB TO UART to the host
 for CH343 flashing and logs. Windows currently identifies that path as COM7.

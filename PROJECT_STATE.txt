@@ -1,7 +1,7 @@
 P4KEY PROJECT STATE
 
 updated utc
-2026 08 26 05 27 46
+2026 08 27 23 18 07
 
 project
 ESP32-P4 2FA Key
@@ -10,7 +10,7 @@ current stage
 03 USB FIDO HID enumeration
 
 stage status
-in progress the bounded USB path strict host checks and explicit live tools pass with the pre v3 bringup image target flash and enumeration next
+all Prompt 03 requirements pass except the one explicitly deferred powered native unplug replug validation which remains not passed and carried into final acceptance
 
 repository path
 /home/ishan/esp32p4-2fa-key
@@ -22,10 +22,10 @@ upstream
 origin/main
 
 local and upstream sync
-synced through 22b567c with zero ahead and zero behind before the fourth stage 03 commit
+synced through 837a627 with zero ahead and zero behind before target evidence and the fifth stage 03 commit
 
 last successful commit
-22b567c wire bounded usb reports
+837a627 add usb host checks
 
 BOARD
 
@@ -48,7 +48,7 @@ native USB device connector
 Type-C connector labeled USB with the direct module USB1P1 data path reserved as the device candidate
 
 native USB mode
-the required Type-C USB1P1 route is the ESP32 P4 full speed controller and must explicitly override the component high speed default actual enumeration remains pending
+Type C USB is FS PHY0 GPIO24 D minus GPIO25 D plus which defaults to USB Serial JTAG and is now reversibly routed to OTG1.1 before TinyUSB starts with healthy 303a 4004 Windows enumeration proven
 
 logging connector
 Type-C PWR USB TO UART through CH343P on GPIO37 and GPIO38 Windows COM7
@@ -89,7 +89,7 @@ compiler
 riscv32-esp-elf-gcc 15.2.0
 
 host OS
-Ubuntu under WSL2 Linux 6.6.87.2 x86_64 currently sees no passed through board USB device while Windows sees the CH343 on COM7
+Ubuntu under WSL2 Linux 6.6.87.2 x86_64 does not own the board USB while Windows loads healthy HID compliant fido nodes for 303a 4004 and an explicitly user approved elevated process proved raw FIDO HID access
 
 host fido tool version
 not installed
@@ -114,16 +114,25 @@ not performed
 LAST SUCCESSFUL COMMANDS
 
 firmware build
-source /home/ishan/esp-idf/export.sh then scripts/build.sh passed with total image size 235524 bytes and 78 percent app partition free SHA 256 d7ab3331c0c33be06b5768523aa75f9569d339507751274e3754ab2bc847824b
+source /home/ishan/esp-idf/export.sh then scripts/build.sh passed after the final PHY route clock guard with total image size 236080 bytes and 77 percent app partition free SHA 256 b7cacbe36b768d9b5e900c5fd8dc62b4bcdd5f9d4886ee878c72ecd327eade52
 
 USB bringup firmware build
-source /home/ishan/esp-idf/export.sh then scripts/build_usb_bringup.sh passed with total image size 238128 bytes and 77 percent app partition free SHA 256 3cd76f7a9a3a9b01c7fc0d7cd392ff63c337cdcc47edbaff2c5c299eb3246e00
+clean builds from empty build/prompt03-clean-normal and build/prompt03-clean-bringup directories passed with total image sizes 236080 and 238684 bytes hashes 34165facafa79697fbb44cebe703150f34684c7c42665c4652a22f57fd14f704 and f202a9d05651e9df73afed2da8bdea38e83cd6c6a5aaf4e192c4f5598f1ae6d5
+
+USB bringup target flash
+Windows Python with esptool 5.3.1 wrote and hash verified only bootloader at 0x2000 partition table at 0x8000 and corrected bringup app at 0x10000 through the native USB Serial JTAG path using USB reset DIO 40 MHz 16 MB and hard reset without force or whole flash erase
+
+USB bringup target boot
+the bounded COM7 capture passed on ESP32 P4 revision 1.3 with IDF 6.0.2 flash 16 MB PSRAM 32 MB TinyUSB driver port 0 full speed HID ready and the fixed USB bringup exchange enabled
+
+normal USB target flash and boot
+Windows esptool 5.3.1 on COM7 wrote and hash verified only the final bootloader partition table and normal app without force or whole flash erase then UART proved revision 1.3 inside the v0.0 through v1.99 image range 16 MB flash 32 MB PSRAM TinyUSB full speed HID ready and no bringup task log
 
 crypto target profile build
 source /home/ishan/esp-idf/export.sh then scripts/build_crypto_test.sh passed with total image size 345100 bytes 67 percent app partition free and p4key.bin SHA 256 ed029db92ca0b3171bef9f11562b76b7cab4a197d70926baeb1abee7af2de783
 
 host unit tests
-python3 -m unittest discover -s tests/host -v passed 31 tests including 15 USB source queue policy and mocked HID checks
+python3 -m unittest discover -s tests/host -v passed 32 tests including 16 USB source queue PHY route policy and mocked HID checks
 
 p256 pure helper checks
 python3 -m unittest discover -s tests/host -v compiles p4_crypto_p256_util.c with Wall Wextra Werror and runs fixed scalar range and canonical DER cases
@@ -141,7 +150,7 @@ crypto proof report
 python3 scripts/crypto_report.py --sdkconfig build/crypto-test/sdkconfig --log captures/crypto-selftest-com7.log --size captures/crypto-test-size.txt --image build/crypto-test/p4key.bin --output docs/generated/CRYPTO_REPORT.txt passed with report status PASS IDF total image size 345100 bytes and a matching boot ELF fingerprint
 
 USB test
-python3 scripts/usb_desc_check.py passed exact source report configuration Kconfig class isolation finite deadline and mount gated resume checks without hidapi installed target enumeration is not attempted yet
+python3 scripts/usb_desc_check.py passed all source checks one user approved elevated Windows process proved exactly one 303a 4004 FIDO HID interface and the exact 64 byte bringup exchange then the final normal image passed the elevated 2000 millisecond no response probe
 
 FIDO test
 not attempted
@@ -200,11 +209,21 @@ the host suite compiles and runs the actual C depth eight ring including reject 
 usb_find asks HIDAPI only for the selected VID PID and rejects exposed mismatching interface or usage facts before opening a candidate
 hid_probe requires an explicit bringup or normal no response mode validates the selected report descriptor before writing a host only report ID prefix plus exactly 64 bytes reads exactly 64 with a finite timeout and closes on every exit
 hidapi 0.15.0 is the sole pinned host dependency and is loaded only by explicit live modes
+the exact bringup firmware normally flashed and booted on the attached revision 1.3 board without force whole flash erase or irreversible configuration
+UART logs remain available on PWR USB TO UART while the native device connector is handled separately
+the board helper reversibly routes OTG1.1 USB WRAP to Type C FS PHY0 before TinyUSB starts and sets GPIO24 and GPIO25 to the drive capability required by the installed USB PHY implementation
+the route regression fails when the selector pins strength or pre install order is removed and the repaired image makes Windows replace USB Serial JTAG with healthy 303a 4004 HID nodes
+the elevated filtered Windows HID checks prove VID 303a PID 4004 one FIDO application collection the exact live 34 byte report descriptor one HID interface no other USB class two 64 byte interrupt endpoints and the exact 64 byte bringup round trip
+the source and clean normal binaries contain no private bringup request response or enabled warning while the clean bringup binary contains all three expected strings
+the final normal image flashed and booted on the attached revision 1.3 target with the pre v3 range and PHY0 clock invariant preserved
+the normal target ignored the exact private bringup request for the full finite timeout and the host closed the HID handle
+the conditional wrong report length target case is unavailable because Windows HIDAPI enforces the live 64 byte report shape before USB transfer and no counter pass is claimed
 
 WHAT IS BROKEN
 
-WSL currently receives neither board cable because the Windows USB devices are not attached through USB IP
-target USB enumeration endpoint round trip normal no response and unplug replug evidence remain pending
+WSL does not own the native USB device and Windows requires elevation for raw access to the FIDO HID collection
+the powered unplug replug without reboot evidence remains pending
+the powered unplug replug counter gate cannot be proven with only one data capable cable and is explicitly deferred not passed and carried into the final acceptance checklist
 physical PCB revision is not established
 physical BOOT pressed level is not sampled yet
 idf.py size emits a nonfatal sram_seg classification warning on the first v3 build and not on the clean pre v3 report
@@ -213,14 +232,15 @@ OPEN FACTS
 
 physical board revision from rear silkscreen or packaging
 physical BOOT key pressed level confirmation
-native USB controller enumeration and negotiated speed in its later stage
+negotiated speed is unavailable through the installed Windows HID and PnP tools while the selected live OTG1.1 PHY0 controller and maintained descriptor are full speed only
 
 EXACT NEXT ACTION
 
-flash the exact usb bringup image normally without force or whole flash erase on COM7 then probe the native connector from WSL first and use Windows only if the same access issue remains
+run final Prompt 03 checks inspect the complete diff commit record usb enumration result push fetch and confirm exact origin synchronization before reading Prompt 04
 
 MANUAL ACTIONS STILL REQUIRED
 
+later provide a second known data capable USB C cable for the deferred powered native unplug replug and UART counter validation which remains not passed
 inspect the board rear or package for a PCB revision marking
 press BOOT during a later level diagnostic to directly confirm raw level 0
 later perform website registration and login during the prompt that requests it
@@ -234,3 +254,4 @@ NOTES
 never put a key nonce private scalar decrypted credential record or eFuse secret in this file
 the user removed repository planning copies in published commit 61e622a and attached prompt pack files are the stage instruction source
 Prompt 02 is complete Prompt 03 is in progress and Prompt 04 has not been started
+the user authorized only the powered native unplug replug validation to remain deferred when Prompt 04 begins and every other Prompt 03 gate must pass first

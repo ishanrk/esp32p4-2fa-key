@@ -752,3 +752,107 @@ reconsider when
 the host library stops exposing required report descriptor semantics or a maintained smaller raw HID package is selected
 
 END DECISION
+
+decision
+0024
+
+time utc
+2026 08 27 00 11 46
+
+stage
+03 USB FIDO HID enumeration
+
+problem
+the Type C connector labeled USB enumerated healthy USB Serial JTAG 303a 1001 because TINYUSB CONFIG FULL SPEED selects OTG1.1 but does not move it from default PHY1 to the connector PHY0
+
+choice
+in the board helper set GPIO24 and GPIO25 to drive capability 3 then use the installed ESP IDF usb wrap low level software selector to route OTG1.1 USB WRAP to PHY0 before TinyUSB starts while retaining the USB Serial JTAG clock configuration
+
+reason
+the Waveshare schematic and live enumeration prove H2 uses PHY0 and the pinned ESP IDF header explicitly supports the reversible mux with no eFuse write while its automatic PHY setup applies the required drive strength only to default PHY1
+
+alternatives rejected
+burning EFUSE USB PHY SEL would be irreversible and is prohibited
+disabling USB Serial JTAG does not select the mux and risks disabling the PHY0 48 MHz clock on the pinned pre v3 path
+moving to the Type A high speed jumper bank conflicts with the selected native Type C device path
+leaving TINYUSB CONFIG FULL SPEED alone starts an electrically invisible controller on GPIO26 and GPIO27
+
+files affected
+components/p4_board/p4_board.c
+components/p4_usb/p4_usb.c
+scripts/usb_common.py
+tests/host/test_usb.py
+docs/BOARD_FACTS.txt
+docs/USB_API_NOTES.txt
+
+reconsider when
+the pinned ESP IDF exposes the full speed PHY index in a public TinyUSB or USB PHY configuration API
+
+END DECISION
+
+decision
+0025
+
+time utc
+2026 08 27 23 07 49
+
+stage
+03 USB FIDO HID enumeration
+
+problem
+the exact powered native USB unplug and replug validation needs simultaneous native data and separate board power plus UART evidence but the user has only one data capable cable
+
+choice
+carry that one physical validation forward as explicitly deferred and not passed while allowing the fifth Prompt 03 commit and Prompt 04 only after every other Prompt 03 requirement passes
+
+reason
+the user authorized this sole prerequisite exception and preserving an unchecked named validation keeps later acceptance honest without blocking all software transport work
+
+alternatives rejected
+marking the test passed without its physical action would invent evidence
+using a Windows device restart would not prove cable detach continuous board power or the volatile target counter deltas
+adding another HID diagnostic or CDC interface would expand the exact Prompt 03 protocol
+
+files affected
+PROJECT_STATE.txt
+docs/USB_TEST.txt
+
+reconsider when
+a second data capable cable or another proven simultaneous UART and power path is available
+
+END DECISION
+
+decision
+0026
+
+time utc
+2026 08 27 23 18 07
+
+stage
+03 USB FIDO HID enumeration
+
+problem
+the reversible OTG1.1 swap moves the active controller onto PHY0 but the installed pre v3 clock setup can gate that PHY when USB Serial JTAG support is disabled
+
+choice
+pin CONFIG_USJ_ENABLE_USB_SERIAL_JTAG enabled and enforce it in the board compile guard and host source regression while leaving the actual console on the CH343 UART
+
+reason
+the pinned ESP IDF uses that configuration to preserve the PHY0 48 MHz clock and live target evidence proves OTG1.1 works after the software mux swap
+
+alternatives rejected
+relying on the current generated sdkconfig would allow a later clean configuration to break the native connector silently
+switching the console to USB Serial JTAG would conflict with the one HID interface requirement
+changing an eFuse would be irreversible and prohibited
+
+files affected
+sdkconfig.defaults
+components/p4_board/p4_board.c
+scripts/usb_common.py
+tests/host/test_usb.py
+docs/USB_API_NOTES.txt
+
+reconsider when
+the pinned ESP IDF provides a separate documented PHY0 clock control for the OTG1.1 software route
+
+END DECISION

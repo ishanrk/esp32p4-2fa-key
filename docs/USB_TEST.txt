@@ -141,3 +141,12 @@ counters recorded unmount or suspend plus mount or resume.
 This is a manual physical test. Record that exact action in PROJECT_STATE.txt
 and stop for the user when the action is required rather than simulating it
 with a reboot.
+
+DEFERRED FINAL VALIDATION
+
+The powered native USB unplug and replug test is explicitly deferred because
+only one data-capable cable is available. It is not passed and must remain
+unchecked in PROJECT_STATE.txt and the final acceptance checklist until the
+physical action above and its counter evidence actually complete. A Windows
+device restart suspend or handle reopen is not substitute evidence. This is
+the sole Prompt 03 prerequisite exception permitted when starting Prompt 04.

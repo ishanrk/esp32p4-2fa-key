@@ -5,5 +5,5 @@ idf_component_register(
         "p4_usb_queue.c"
     INCLUDE_DIRS "include"
     PRIV_INCLUDE_DIRS "."
-    PRIV_REQUIRES esp_tinyusb freertos log
+    PRIV_REQUIRES esp_tinyusb freertos log p4_board
 )

@@ -577,6 +577,35 @@ def check_source_policy(usb_source, main_source):
     return errors
 
 
+def check_native_usb_route(board_source, usb_source, defaults_text):
+    errors = []
+    board = re.sub(r"\s+", " ", strip_c_comments(board_source))
+    required = (
+        "P4_BOARD_USB_FS_PHY_INDEX = 0",
+        "P4_BOARD_USB_DM_GPIO = GPIO_NUM_24",
+        "P4_BOARD_USB_DP_GPIO = GPIO_NUM_25",
+        "usb_wrap_ll_phy_select(&USB_WRAP, P4_BOARD_USB_FS_PHY_INDEX);",
+    )
+    if any(fragment not in board for fragment in required):
+        errors.append("native Type-C is not routed to OTG1.1 FS PHY0")
+    if board.count("GPIO_DRIVE_CAP_3") != 2:
+        errors.append("native Type-C PHY pins do not both request 40 mA drive")
+    if "#ifndef CONFIG_USJ_ENABLE_USB_SERIAL_JTAG" not in board_source:
+        errors.append("native Type-C PHY0 clock lacks a compile guard")
+    if "CONFIG_USJ_ENABLE_USB_SERIAL_JTAG=y" not in defaults_text:
+        errors.append("native Type-C PHY0 clock source is not pinned")
+
+    try:
+        start = re.sub(r"\s+", " ", _function_body(usb_source, "usb_start"))
+        prepare = start.index("p4_board_usb_prepare()")
+        install = start.index("tinyusb_driver_install(&config)")
+        if prepare >= install:
+            errors.append("native Type-C PHY route is selected after TinyUSB starts")
+    except (UsbCheckError, ValueError):
+        errors.append("USB start does not prepare the native Type-C PHY route")
+    return errors
+
+
 def check_project_source(root=REPO):
     root = Path(root)
     facts = {}
@@ -585,6 +614,7 @@ def check_project_source(root=REPO):
         header = read_text(root / "components/p4_usb/include/p4_usb_desc.h")
         desc_source = read_text(root / "components/p4_usb/p4_usb_desc.c")
         usb_source = read_text(root / "components/p4_usb/p4_usb.c")
+        board_source = read_text(root / "components/p4_board/p4_board.c")
         main_source = read_text(root / "main/app_main.c")
         kconfig = read_text(root / "components/p4_usb/Kconfig")
         defaults_text = read_text(root / "sdkconfig.defaults")
@@ -648,6 +678,8 @@ def check_project_source(root=REPO):
                 errors.append(f"descriptor compile guard omits {symbol}")
 
         errors.extend(check_source_policy(usb_source, main_source))
+        errors.extend(check_native_usb_route(
+            board_source, usb_source, defaults_text))
     except UsbCheckError as error:
         errors.append(str(error))
     return facts, sorted(set(errors))

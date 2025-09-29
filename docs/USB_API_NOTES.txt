@@ -43,13 +43,17 @@ INITIALIZATION
 
 tinyusb_driver_install accepts a tinyusb_config_t and starts the TinyUSB device
 task. TINYUSB_CONFIG_FULL_SPEED(event_cb, event_arg) selects the ESP32 P4
-full speed port with the internal PHY. Descriptor pointers are installed through
-the descriptor member and must remain valid for the stack lifetime.
+OTG1.1 controller. It does not change which of the two full speed PHYs is wired
+to that controller. Descriptor pointers are installed through the descriptor
+member and must remain valid for the stack lifetime.
 
 Do not use TINYUSB_DEFAULT_CONFIG for this board connector. On ESP32 P4 that
 macro selects TINYUSB_PORT_HIGH_SPEED_0. The required Type-C connector labeled
-USB is routed as USB1P1 and uses TINYUSB_PORT_FULL_SPEED_0. ESP IDF v6.0.2
-defines USB_PHY_SUPPORTS_P4_OTG11 for this port.
+USB is USB1P1 full speed PHY0 on GPIO24 and GPIO25. PHY0 defaults to USB Serial
+JTAG while OTG1.1 defaults to PHY1 on GPIO26 and GPIO27. Before installing
+TinyUSB the board helper sets 40 mA drive on GPIO24 and GPIO25 and uses the
+installed ESP-IDF usb_wrap_ll_phy_select selector to route USB WRAP to PHY0.
+This is a resettable software mux and does not write EFUSE_USB_PHY_SEL.
 
 DESCRIPTORS
 
@@ -90,10 +94,16 @@ intervals differently but this project keeps the reference values.
 
 PHY AND SPEED
 
-The Type-C connector labeled USB is the direct USB1P1 full speed route. The
-separate Type-A jumper bank is the board high speed OTG path and is not selected.
-The active device limit for this stage is therefore USB full speed at 12 Mbit/s.
-Target enumeration must confirm full speed before the stage is complete.
+The Type-C connector labeled USB is the direct USB1P1 full speed PHY0 route.
+The board helper swaps OTG1.1 onto that PHY before TinyUSB starts and moves USB
+Serial JTAG to the unused PHY1 path. CONFIG_USJ_ENABLE_USB_SERIAL_JTAG remains
+enabled because the installed pre v3 clock setup supplies PHY0's 48 MHz clock;
+the system console remains the separate CH343 UART. The Type-A jumper bank is
+the board high speed OTG path and is not selected. The active device limit for
+this stage is therefore USB full speed at 12 Mbit/s. Live 303a 4004 enumeration
+after the PHY0 mux repair proves the device uses this FS-only controller route.
+Installed Windows HID and PnP tools do not expose a separate negotiated speed
+field so that field remains explicitly unavailable instead of guessed.
 
 TASK OWNERSHIP
 
@@ -120,6 +130,12 @@ dual powered board has no valid routed GPIO for a native connector VBUS
 monitor, so suspend conservatively advances the same connectivity generation
 and drops queued or held work. Resume restores readiness only when the stack
 still reports the device configured.
+
+The pre v3 PHY0 clock depends on CONFIG_USJ_ENABLE_USB_SERIAL_JTAG remaining
+enabled even though the system console stays on UART. sdkconfig defaults and a
+compile guard pin that invariant. If TinyUSB installation fails after the mux
+swap the Type-C connector may not expose USB Serial JTAG again until hardware
+reset; PWR USB TO UART remains the recovery and logging path.
 
 KNOWN LIMITS
 

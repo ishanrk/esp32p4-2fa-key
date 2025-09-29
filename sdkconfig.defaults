@@ -31,6 +31,9 @@ CONFIG_ESP_CONSOLE_UART_DEFAULT=y
 CONFIG_ESP_CONSOLE_SECONDARY_NONE=y
 CONFIG_LOG_DEFAULT_LEVEL_INFO=y
 
+# keep the pre v3 PHY0 48 MHz clock active after the reversible USB mux swap
+CONFIG_USJ_ENABLE_USB_SERIAL_JTAG=y
+
 # one FIDO shaped HID interface on the native full speed controller
 CONFIG_TINYUSB_DEBUG_LEVEL=0
 CONFIG_TINYUSB_MODE_DMA=y

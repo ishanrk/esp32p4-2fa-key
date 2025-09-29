@@ -12,6 +12,8 @@ from pathlib import Path
 REPO = Path(__file__).resolve().parents[2]
 SCRIPTS = REPO / "scripts"
 USB_SOURCE = REPO / "components" / "p4_usb" / "p4_usb.c"
+BOARD_SOURCE = REPO / "components" / "p4_board" / "p4_board.c"
+SDKCONFIG_DEFAULTS = REPO / "sdkconfig.defaults"
 DESC_SOURCE = REPO / "components" / "p4_usb" / "p4_usb_desc.c"
 DESC_HEADER = REPO / "components" / "p4_usb" / "include" / "p4_usb_desc.h"
 QUEUE_SOURCE = REPO / "components" / "p4_usb" / "p4_usb_queue.c"
@@ -516,6 +518,37 @@ class UsbSourceTests(unittest.TestCase):
         self.assertIn("p4_usb_queue_reset(&s_rx_queue);", suspended)
         self.assertIn("s_ready = s_mounted;", resumed)
         self.assertNotIn("s_ready = true;", resumed)
+
+    def test_native_type_c_uses_otg_on_fs_phy_zero(self):
+        board_source = usb_common.strip_c_comments(
+            BOARD_SOURCE.read_text(encoding="utf-8")
+        )
+        board_compact = re.sub(r"\s+", " ", board_source)
+        self.assertIn(
+            "usb_wrap_ll_phy_select(&USB_WRAP, P4_BOARD_USB_FS_PHY_INDEX);",
+            board_compact,
+        )
+        self.assertIn("P4_BOARD_USB_FS_PHY_INDEX = 0", board_compact)
+        self.assertIn("P4_BOARD_USB_DM_GPIO = GPIO_NUM_24", board_compact)
+        self.assertIn("P4_BOARD_USB_DP_GPIO = GPIO_NUM_25", board_compact)
+        self.assertEqual(board_compact.count("GPIO_DRIVE_CAP_3"), 2)
+        self.assertIn(
+            "#ifndef CONFIG_USJ_ENABLE_USB_SERIAL_JTAG", board_source
+        )
+        self.assertIn(
+            "CONFIG_USJ_ENABLE_USB_SERIAL_JTAG=y",
+            SDKCONFIG_DEFAULTS.read_text(encoding="utf-8"),
+        )
+
+        usb_source = usb_common.strip_c_comments(
+            USB_SOURCE.read_text(encoding="utf-8")
+        )
+        usb_start = re.sub(
+            r"\s+", " ", usb_common._function_body(usb_source, "usb_start")
+        )
+        prepare = usb_start.index("p4_board_usb_prepare()")
+        install = usb_start.index("tinyusb_driver_install(&config)")
+        self.assertLess(prepare, install)
 
     def test_complete_project_source_checker_passes(self):
         facts, errors = usb_common.check_project_source(REPO)

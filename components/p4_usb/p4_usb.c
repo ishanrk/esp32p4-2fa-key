@@ -1,5 +1,6 @@
 #include "p4_usb.h"
 
+#include "p4_board.h"
 #include "p4_usb_desc_private.h"
 #include "p4_usb_queue.h"
 
@@ -187,7 +188,16 @@ int usb_start(void)
         return P4_USB_ERR_STATE;
     }
 
-    // the P4 default is high speed so select the Type-C USB1P1 port explicitly
+    esp_err_t err = p4_board_usb_prepare();
+    if (err != ESP_OK) {
+        taskENTER_CRITICAL(&s_lock);
+        s_started = false;
+        taskEXIT_CRITICAL(&s_lock);
+        ESP_LOGE(tag, "native USB PHY route failed: %s", esp_err_to_name(err));
+        return P4_USB_ERR_DRIVER;
+    }
+
+    // select the OTG1.1 controller after routing it to the Type-C PHY
     tinyusb_config_t config = TINYUSB_CONFIG_FULL_SPEED(usb_event, NULL);
     config.descriptor.device = &p4_usb_device_desc;
     config.descriptor.qualifier = NULL;
@@ -196,7 +206,7 @@ int usb_start(void)
     config.descriptor.full_speed_config = p4_usb_config_desc;
     config.descriptor.high_speed_config = NULL;
 
-    esp_err_t err = tinyusb_driver_install(&config);
+    err = tinyusb_driver_install(&config);
     if (err != ESP_OK) {
         taskENTER_CRITICAL(&s_lock);
         s_started = false;

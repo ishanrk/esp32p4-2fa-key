@@ -4,7 +4,23 @@
 #include <stdint.h>
 
 #include "driver/gpio.h"
+#include "hal/usb_wrap_ll.h"
 #include "sdkconfig.h"
+
+#if !defined(USB_WRAP_LL_SELECT_PHY_SUPPORTED) || !USB_WRAP_LL_SELECT_PHY_SUPPORTED
+#error "ESP32-P4 software USB full-speed PHY selection is required"
+#endif
+
+#ifndef CONFIG_USJ_ENABLE_USB_SERIAL_JTAG
+#error "ESP32-P4 pre-v3 full-speed PHY0 clock source is required"
+#endif
+
+enum {
+    // Waveshare H2 USB Type-C is FS PHY0 on GPIO24 D- and GPIO25 D+.
+    P4_BOARD_USB_FS_PHY_INDEX = 0,
+    P4_BOARD_USB_DM_GPIO = GPIO_NUM_24,
+    P4_BOARD_USB_DP_GPIO = GPIO_NUM_25,
+};
 
 static bool button_ready;
 
@@ -36,6 +52,25 @@ esp_err_t p4_board_init(void)
         button_ready = true;
     }
     return err;
+}
+
+
+esp_err_t p4_board_usb_prepare(void)
+{
+    // usb_phy sets 40 mA only on the default PHY1 GPIOs, so mirror it here.
+    esp_err_t err = gpio_set_drive_capability(
+        P4_BOARD_USB_DM_GPIO, GPIO_DRIVE_CAP_3);
+    if (err != ESP_OK) {
+        return err;
+    }
+    err = gpio_set_drive_capability(P4_BOARD_USB_DP_GPIO, GPIO_DRIVE_CAP_3);
+    if (err != ESP_OK) {
+        return err;
+    }
+
+    // Route OTG1.1 USB_WRAP to H2's PHY0 before TinyUSB claims the controller.
+    usb_wrap_ll_phy_select(&USB_WRAP, P4_BOARD_USB_FS_PHY_INDEX);
+    return ESP_OK;
 }
 
 

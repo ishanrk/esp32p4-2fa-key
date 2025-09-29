@@ -1204,3 +1204,213 @@ next action
 rerun the full host suite and final independent review before the fourth stage commit
 
 END ENTRY
+
+entry
+0035
+
+time utc
+2026 08 26 05 30 36
+
+stage
+03 USB FIDO HID enumeration
+
+action
+flash the verified bringup image then attempt target enumeration from WSL first and Windows only after the same pass through issue recurred
+
+observed
+the normal COM7 write verified all three image regions and UART boot showed TinyUSB port 0 full speed HID ready with bringup enabled but WSL filtered lsusb exited 1 with only two root hubs and Windows printed P4KEY_HID_COUNT 0
+
+cause
+the native connector device path is not physically observable and whether a known data-capable cable is attached to the connector labeled USB cannot be established in software
+
+fix tried
+stopped without changing Windows drivers installing a WSL bridge resetting USB jumpers or guessing a cable state
+
+result
+manual physical action required
+
+commit
+pending record usb enumration result
+
+regression test
+after the user connects the native data cable repeat filtered enumeration descriptor validation and the fixed 64 byte round trip before the later unplug replug gate
+
+next action
+keep PWR USB TO UART connected then connect one known data-capable Type-C cable from the board connector labeled USB to this Windows host without touching the Type-A jumper bank BOOT RESET or any power setting and tell Codex when it is connected
+
+END ENTRY
+
+entry
+0036
+
+time utc
+2026 08 27 00 11 46
+
+stage
+03 USB FIDO HID enumeration
+
+action
+resume the physical gate with the only data cable on Type C USB then inspect the unexpected 303a 1001 identity repair the PHY route rebuild flash through that same native connection and run the filtered Windows HID tools
+
+observed
+before the repair Windows saw healthy USB Serial JTAG and no 303a 4004 after the reversible repair and verified flash USB Serial JTAG disappeared and Windows loaded healthy HID compliant fido and USB Input Device nodes for 303a 4004 but non elevated hidapi enumerated zero matching devices
+
+cause
+the connector is ESP32 P4 FS PHY0 on GPIO24 and GPIO25 while TINYUSB CONFIG FULL SPEED selected OTG1.1 on default PHY1 without selecting the physical mux then after repair Windows security denied non elevated raw access to the FIDO HID collection
+
+fix tried
+add a regression first then set both connector pins to drive capability 3 and use the installed ESP IDF reversible USB WRAP PHY0 selector before TinyUSB starts rebuild both profiles and flash only the three normal image regions through native USB Serial JTAG with USB reset and hash verification
+
+result
+enumeration repair passed and 32 host tests plus both builds pass but the exact 64 byte target round trip is manually blocked on one Windows UAC approval and the later no reboot remount and normal no response gates remain pending
+
+commit
+pending record usb enumration result
+
+regression test
+python3 -m unittest tests.host.test_usb.UsbSourceTests.test_native_type_c_uses_otg_on_fs_phy_zero -v fails without the PHY route and passes with the route pins drive strength and pre install order while the full host suite passes 32 tests
+
+next action
+leave the only data capable cable connected to Type C USB tell Codex when ready to approve one Windows UAC prompt then run the existing filtered usb find live descriptor and bringup probe as an elevated process without installing a driver or changing USB sharing
+
+END ENTRY
+
+entry
+0037
+
+time utc
+2026 08 27 00 20 45
+
+stage
+03 USB FIDO HID enumeration
+
+action
+launch the user authorized elevated Windows process for the VID PID filtered live descriptor and exact bringup round trip checks
+
+observed
+the elevation request waited without running the inner commands then Start Process returned the sanitized UAC NOT APPROVED result
+
+cause
+the Windows elevation confirmation was dismissed or timed out
+
+fix tried
+stopped without retrying the UAC request changing a driver sharing the USB device or moving the cable
+
+result
+manual Windows confirmation still required and no target probe result was claimed
+
+commit
+pending record usb enumration result
+
+regression test
+the elevated wrapper writes a result only after approval and the absence of a result prevented every HID command from being marked passed
+
+next action
+leave the cable on Type C USB bring the Windows desktop to the foreground tell Codex retry and immediately approve the single UAC prompt
+
+END ENTRY
+
+entry
+0038
+
+time utc
+2026 08 27 01 05 57
+
+stage
+03 USB FIDO HID enumeration
+
+action
+retry the user authorized elevated Windows process for the VID PID filtered live descriptor and exact bringup round trip checks
+
+observed
+the approved process found exactly one 303a 4004 interface 0 usage page f1d0 usage 01 with 64 byte input and output reports reconstructed the live 34 byte FIDO report descriptor verified the 41 byte HID only configuration and passed the exact 64 byte bringup request and response
+
+cause
+the earlier absence of a live result was only an unapproved UAC request and not a firmware descriptor endpoint or transport failure
+
+fix tried
+rerun the same sanitized elevated wrapper after the user brought Windows forward and approved the single prompt without installing a driver changing USB sharing moving the cable or touching the board
+
+result
+native enumeration descriptor validation and bringup round trip passed but the next powered unplug replug counter gate needs simultaneous native USB data and PWR USB TO UART power plus logs which cannot be provided by the one available data capable cable
+
+commit
+pending record usb enumration result
+
+regression test
+the elevated live checks passed every maintained descriptor identity interface endpoint deadline and bringup response assertion while printing no raw HID path
+
+next action
+obtain a second known data capable USB C cable leave the current cable on Type C USB connect the second cable from PWR USB TO UART to Windows without pressing BOOT or RESET or changing a jumper then tell Codex when both are connected
+
+END ENTRY
+
+entry
+0039
+
+time utc
+2026 08 27 23 07 49
+
+stage
+03 USB FIDO HID enumeration
+
+action
+collect sanitized Windows Python and hidapi versions then locate the already installed Windows esptool environment for the normal image flash
+
+observed
+the first inline Python version expression had an unterminated string literal and the global Windows Python reported no module named esptool
+
+cause
+the nested PowerShell Python quoting was malformed and esptool is intentionally installed only in the existing temporary pinned environment
+
+fix tried
+read hidapi with pip show and enumerate only p4key named temporary environments until the one reporting esptool 5.3.1 was found
+
+result
+fixed with Windows 11 Pro 10.0.26200 Python 3.12.2 hidapi 0.15.0 and esptool 5.3.1 recorded without a raw HID path
+
+commit
+pending record usb enumration result
+
+regression test
+each corrected command returned one exact installed version and the normal COM7 flash later hash verified all three written image regions
+
+next action
+finish the normal HID no response target check after moving the one cable back to Type C USB
+
+END ENTRY
+
+entry
+0040
+
+time utc
+2026 08 27 23 18 07
+
+stage
+03 USB FIDO HID enumeration
+
+action
+run the final normal firmware no response probe as a user approved elevated Windows process
+
+observed
+the first launcher returned Start Process parameter set cannot be resolved because Verb RunAs was combined with redirected output
+
+cause
+Windows PowerShell 5.1 places elevation and direct standard output redirection in incompatible Start Process parameter sets
+
+fix tried
+launch one encoded elevated child command that writes only the sanitized probe result to a temporary file then read and remove that file from the parent
+
+result
+fixed and the elevated probe exited zero with PASS normal firmware did not answer the private bringup report
+
+commit
+pending record usb enumration result
+
+regression test
+the host probe validated the live FIDO HID descriptor wrote the exact private 64 byte request waited the finite 2000 millisecond timeout received no response and closed the handle
+
+next action
+run every final Prompt 03 check then make and push the fifth commit
+
+END ENTRY
