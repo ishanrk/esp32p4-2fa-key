@@ -1,0 +1,74 @@
+P4KEY CTAPHID NOTES
+
+normative source
+FIDO Alliance Client to Authenticator Protocol 2.2 Proposed Standard
+14 July 2025
+https://fidoalliance.org/specs/fido-v2.2-ps-20250714/fido-client-to-authenticator-protocol-v2.2-ps-20250714.html#usb
+
+command representation
+constants store the complete initialization packet wire byte including bit seven
+PING 0x81
+INIT 0x86
+CBOR 0x90
+CANCEL 0x91
+KEEPALIVE 0xbb
+ERROR 0xbf
+
+packet facts
+CID and payload length fields use network byte order
+initial packets carry 57 bytes after the seven byte header
+continuation packets carry 59 bytes after the five byte header
+continuation sequence starts at 0 and has a normative maximum of 127
+the normative framing can represent 7609 bytes
+this project deliberately limits assembled messages to 2048 bytes
+
+HID errors
+invalid command 0x01
+invalid parameter 0x02
+invalid length 0x03
+invalid sequence 0x04
+message timeout 0x05
+channel busy 0x06
+lock required 0x0a
+invalid channel 0x0b
+other 0x7f
+
+INIT
+the request is exactly an eight byte nonce
+the response is exactly 17 bytes
+bytes 0 through 7 repeat the nonce
+bytes 8 through 11 hold the allocated or retained CID in network order
+byte 12 is CTAPHID protocol version 2
+bytes 13 through 15 are the project major minor and build version
+byte 16 is the capability bit field
+capability WINK is 0x01 and is not advertised
+capability CBOR is 0x04 and is advertised
+capability NMSG is 0x08 and is advertised because MSG is absent
+the project capability byte is therefore 0x0c
+broadcast INIT allocates a nonzero nonbroadcast channel and replies on broadcast
+INIT on an allocated CID discards that CID transaction and retains the CID
+
+arbitration
+CID zero and 0xffffffff are never allocated
+a different channel initial request while a transaction is active gets channel busy
+a second non INIT initial packet on the incomplete active CID gets invalid sequence
+spurious continuation packets without a matching initialization packet are ignored
+CANCEL has a zero byte body and never receives its own response
+CANCEL for no active CBOR or a nonactive CID is ignored
+an active cancelled CBOR request receives CTAP2 keepalive cancel 0x2d
+
+keepalive
+processing is 0x01
+user presence needed is 0x02
+keepalive does not end a transaction
+the project uses a 100 millisecond cadence and sends a changed status without delay
+
+message timeout
+CTAP 2.2 requires a bounded partial transaction timeout but sets no numeric value
+this project selects 500 milliseconds as local bounded transport policy
+periodic cleanup releases stale partial state
+the next related continuation receives message timeout when that response is meaningful
+
+known specification edge
+CTAP 2.2 does not explicitly resolve broadcast INIT during another CID transaction
+the stage implementation decision and regression test record the selected behavior

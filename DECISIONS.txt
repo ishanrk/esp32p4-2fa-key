@@ -856,3 +856,35 @@ reconsider when
 the pinned ESP IDF provides a separate documented PHY0 clock control for the OTG1.1 software route
 
 END DECISION
+
+decision
+0027
+
+time utc
+2026 08 27 23 26 07
+
+stage
+04 CTAPHID transport
+
+problem
+the pinned CTAP 2.2 binding verifies wire values and requires a bounded message timeout but does not assign a numeric timeout and the source representation could store either command IDs or complete packet bytes
+
+choice
+store complete command bytes with bit seven set select a local 500 millisecond partial message timeout and use a 100 millisecond keepalive cadence
+
+reason
+complete bytes remove repeated bit manipulation from parsing and transmission while the selected timeout bounds stale assembly state and the keepalive cadence satisfies the project range and the normative at least every 100 milliseconds wording
+
+alternatives rejected
+calling 500 milliseconds a normative constant would overstate the specification
+storing seven bit command IDs would make every framing path reconstruct the same wire byte
+a slower keepalive cadence would sit less clearly inside the normative wording
+
+files affected
+components/p4_ctaphid/include/p4_ctaphid_wire.h
+docs/CTAPHID_NOTES.txt
+
+reconsider when
+the pinned CTAP binding assigns a numeric USB transaction timeout or the transport packet representation changes
+
+END DECISION

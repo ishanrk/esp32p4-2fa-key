@@ -1414,3 +1414,38 @@ next action
 run every final Prompt 03 check then make and push the fifth commit
 
 END ENTRY
+
+entry
+0041
+
+time utc
+2026 08 27 23 27 35
+
+stage
+04 CTAPHID transport
+
+action
+append decision 0027 with a repeated generic END DECISION patch context then check record ordering
+
+observed
+rg reported decision 0027 at line 39 before decision 0002 instead of after decision 0026
+
+cause
+the patch matched the first repeated decision terminator even though continuity records are append only
+
+fix tried
+move only the new uncommitted decision after the unique final decision 0026 context and recheck ordered identifiers
+
+result
+fixed with decisions ordered 0001 through 0027 and the continuity checker passing
+
+commit
+pending add ctaphid wire constants
+
+regression test
+rg ordered decision identifiers and python3 scripts/state_check.py
+
+next action
+use the unique final record fields as append context for every later continuity update
+
+END ENTRY
