@@ -1449,3 +1449,112 @@ next action
 use the unique final record fields as append context for every later continuity update
 
 END ENTRY
+
+entry
+0042
+
+time utc
+2026 08 27 23 31 00
+
+stage
+04 CTAPHID transport
+
+action
+compile the new actual receive core harness with Wall Wextra and Werror
+
+observed
+ctaphid_rx_test.c line 150 error memset used with constant zero length parameter and cc1 treated all warnings as errors
+
+cause
+the padding test retained a no operation memset after the initial packet capacity calculation left zero padding bytes
+
+fix tried
+remove the zero length call because the packet helper already clears the complete fixed report
+
+result
+fixed pending the repeated narrow receive test
+
+commit
+pending build frame receive paths
+
+regression test
+python3 -m unittest tests.host.test_ctaphid_rx -v compiles every receive core source with warnings as errors
+
+next action
+rerun the actual receive harness and preserve the fixed report helper as the padding setup
+
+END ENTRY
+
+entry
+0043
+
+time utc
+2026 08 27 23 38 07
+
+stage
+04 CTAPHID transport
+
+action
+run the expanded receive core harness after adding the complete queue counter assertion
+
+observed
+test_actual_receive_core (tests.host.test_ctaphid_rx.CtaphidReceiveTests) ... ERROR
+subprocess.CalledProcessError: Command ctaphid_rx_test returned non-zero exit status 1
+the directly repeated harness printed exactly FAIL test_message_busy_cancel_and_handoff line 435
+
+cause
+the allocated INIT busy path preserved the queued message but did not increment the same saturated queue full counter used by other blocked initial requests
+
+fix tried
+use one bounded count helper in both allocated INIT busy and ordinary initial busy paths
+
+result
+fixed and the expanded receive harness passes
+
+commit
+pending build frame receive paths
+
+regression test
+test_message_busy_cancel_and_handoff now requires the counter to include both full queue rejections while the original completed CBOR remains readable
+
+next action
+finish the receive review and complete the second atomic stage commit
+
+END ENTRY
+
+entry
+0044
+
+time utc
+2026 08 27 23 38 07
+
+stage
+04 CTAPHID transport
+
+action
+audit whether entry 0042 retained the compiler failure exactly enough under the append only continuity rule
+
+observed
+the exact diagnostic omitted there was
+/home/ishan/esp32p4-2fa-key/tests/host/ctaphid_rx_test.c:150:5: error: memset used with constant zero length parameter; this could be due to transposed parameters [-Werror=memset-transposed-args]
+cc1: all warnings being treated as errors
+
+cause
+entry 0042 summarized the diagnostic instead of preserving its full path warning class and compiler followup line
+
+fix tried
+append this correction without changing the published order or rewriting the earlier record
+
+result
+fixed for the continuity record
+
+commit
+pending build frame receive paths
+
+regression test
+python3 scripts/state_check.py and a direct tail review of entries 0042 through 0044
+
+next action
+copy exact sanitized tool output into each new failure entry before committing it
+
+END ENTRY

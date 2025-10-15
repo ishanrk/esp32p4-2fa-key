@@ -1,7 +1,7 @@
 P4KEY PROJECT STATE
 
 updated utc
-2026 08 27 23 27 35
+2026 08 27 23 39 05
 
 project
 ESP32-P4 2FA Key
@@ -10,7 +10,7 @@ current stage
 04 CTAPHID transport
 
 stage status
-Prompt 03 is closed at its fifth pushed commit with only the explicitly deferred powered native unplug replug validation still not passed and carried into final acceptance Prompt 04 verified wire constants and local timing policy are implemented and receive work is next
+Prompt 03 is closed at its fifth pushed commit with only the explicitly deferred powered native unplug replug validation still not passed and carried into final acceptance Prompt 04 wire constants and bounded receive channel timeout cancel reset and fixed buffer handoff paths pass their host checks
 
 repository path
 /home/ishan/esp32p4-2fa-key
@@ -22,10 +22,10 @@ upstream
 origin/main
 
 local and upstream sync
-synced through 831f13e with zero ahead and zero behind before the first stage 04 commit
+synced through 81b306b with zero ahead and zero behind before the second stage 04 commit
 
 last successful commit
-831f13e record usb enumration result
+81b306b add ctaphid wire constants
 
 BOARD
 
@@ -143,8 +143,11 @@ python3 scripts/state_check.py passed
 CTAPHID wire checks
 python3 -m unittest tests.host.test_ctaphid_constants -v passed two verified constant documentation and compile checks
 
+CTAPHID receive checks
+python3 -m unittest tests.host.test_ctaphid_rx -v compiled the actual pure C receive channel and time sources with Wall Wextra Werror then passed all PING boundaries broadcast and retained INIT fragmented input spurious continuation exact and wrapped timeout busy silent CANCEL coherent queue full reset scrub bounded allocation and stale generation cases
+
 Prompt 04 firmware build
-source /home/ishan/esp-idf/export.sh then scripts/build.sh passed after adding the header only CTAPHID wire component with total image size unchanged at 236080 bytes
+source /home/ishan/esp-idf/export.sh then scripts/build.sh reconfigured and compiled p4_ctaphid_rx.c p4_ctaphid_chan.c and p4_ctaphid_time.c for the ESP32 P4 pre v3 profile then passed at total image size 236080 bytes
 
 crypto config check
 python3 scripts/check_crypto_config.py passed 18 required and disabled generated release and target profile sdkconfig checks
@@ -228,6 +231,15 @@ the pinned CTAP 2.2 USB HID binding was read before defining transport constants
 CTAPHID command constants retain the full initialization packet wire byte including bit seven
 verified HID errors INIT layout protocol version capability values keepalive states and CTAP cancel status have compile time host checks
 the 2048 byte assembled message bound 500 millisecond local partial timeout and 100 millisecond keepalive cadence are documented without presenting the local timeout as a normative constant
+four fixed channel records allocate only nonzero nonbroadcast hardware random CIDs with bounded collision retries
+one active transaction and two fixed 2048 byte buffers provide an ownership handoff without heap allocation or unread message overwrite
+the depth one complete handoff retains its own CID command length and operation generation independent from mutable channel parsing state
+input parsing copies only declared remaining bytes ignores padding rejects oversize bad channel bad command bad length wrong sequence and conflicting work then clears failed partial state
+spurious continuations are ignored and periodic cleanup leaves a bounded timeout marker for the next related continuation error
+same CID INIT clears partial processing cancel and queued request state then returns the retained CID while broadcast INIT can allocate without disturbing an active channel
+each claimed complete request carries its channel operation generation so a stale consumer cannot cancel finish or wipe newer same CID work after INIT resynchronization
+valid CANCEL only marks the active CBOR operation and produces no direct response action
+the complete host suite passes 35 tests after the receive core addition
 
 WHAT IS BROKEN
 
@@ -246,7 +258,7 @@ negotiated speed is unavailable through the installed Windows HID and PnP tools 
 
 EXACT NEXT ACTION
 
-inspect the first Prompt 04 atomic diff run state and wire checks commit add ctaphid wire constants push fetch and confirm exact origin synchronization then build the receive paths
+inspect the reviewed second atomic diff run continuity checks commit build frame receive paths push fetch and confirm exact origin synchronization then add output and runtime logic
 
 MANUAL ACTIONS STILL REQUIRED
 

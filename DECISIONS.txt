@@ -888,3 +888,69 @@ reconsider when
 the pinned CTAP binding assigns a numeric USB transaction timeout or the transport packet representation changes
 
 END DECISION
+
+decision
+0028
+
+time utc
+2026 08 27 23 33 29
+
+stage
+04 CTAPHID transport
+
+problem
+CTAPHID needs at least four allocated channels a bounded completed message handoff and strict transaction atomicity without per message allocation or overwriting an unread request
+
+choice
+keep four fixed channel records permit one active request globally and use two fixed 2048 byte buffers that swap ownership when a CBOR request completes
+
+reason
+one buffer can assemble while the other belongs to the depth one completed handoff so a full queue rejects new work without changing the older request and global transaction ownership matches the permitted simple device model
+
+alternatives rejected
+one payload array per channel would spend memory on transactions the device intentionally serializes
+copying through a heap queue would make input size affect allocation
+one shared array could overwrite an unread complete request in a queue full failure path
+
+files affected
+components/p4_ctaphid/p4_ctaphid_priv.h
+components/p4_ctaphid/p4_ctaphid_chan.c
+components/p4_ctaphid/p4_ctaphid_rx.c
+
+reconsider when
+a later dispatcher proves more than one simultaneous assembled request is required
+
+END DECISION
+
+decision
+0029
+
+time utc
+2026 08 27 23 38 07
+
+stage
+04 CTAPHID transport
+
+problem
+CTAP 2.2 clearly defines same CID INIT resynchronization and different channel busy behavior but does not explicitly resolve a broadcast INIT allocation while another CID is processing
+
+choice
+allow a valid broadcast INIT to allocate and respond without changing the active transaction while an INIT on another already allocated CID still receives channel busy
+
+reason
+allocation uses a separate fixed control response and does not inspect replace or unlock the active request so it preserves atomicity while keeping channel discovery responsive during a later user wait
+
+alternatives rejected
+aborting the active channel would violate transaction ownership
+returning busy for every broadcast INIT would prevent a new client from obtaining a channel during a long user presence wait
+allocating from an existing allocated CID would violate the defined retained CID resynchronization behavior
+
+files affected
+components/p4_ctaphid/p4_ctaphid_rx.c
+tests/host/ctaphid_rx_test.c
+docs/CTAPHID_NOTES.txt
+
+reconsider when
+a newer pinned CTAP binding defines broadcast INIT arbitration differently or interoperability evidence requires the conservative busy reading
+
+END DECISION

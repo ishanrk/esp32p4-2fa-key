@@ -71,4 +71,6 @@ the next related continuation receives message timeout when that response is mea
 
 known specification edge
 CTAP 2.2 does not explicitly resolve broadcast INIT during another CID transaction
-the stage implementation decision and regression test record the selected behavior
+the project allows that allocation and response without disturbing the active CID
+INIT on a different already allocated CID still receives channel busy
+decision 0029 and the receive regression record this selected behavior
