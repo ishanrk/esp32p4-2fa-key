@@ -509,7 +509,19 @@ def check_source_policy(usb_source, main_source):
     errors = []
     try:
         take = re.sub(r"\s+", " ", _function_body(usb_source, "usb_take"))
+        take_token = re.sub(
+            r"\s+", " ", _function_body(usb_source, "usb_take_with_generation")
+        )
+        take_common = re.sub(
+            r"\s+", " ", _function_body(usb_source, "usb_take_common")
+        )
         send = re.sub(r"\s+", " ", _function_body(usb_source, "usb_send"))
+        send_token = re.sub(
+            r"\s+", " ", _function_body(usb_source, "usb_send_for_generation")
+        )
+        send_common = re.sub(
+            r"\s+", " ", _function_body(usb_source, "usb_send_common")
+        )
         event = re.sub(r"\s+", " ", _function_body(usb_source, "usb_event"))
         callback = re.sub(
             r"\s+", " ", _function_body(usb_source, "tud_hid_set_report_cb")
@@ -521,24 +533,36 @@ def check_source_policy(usb_source, main_source):
         "xSemaphoreTake(s_rx_wake, remaining) != pdTRUE || "
         "xTaskCheckForTimeOut(&timeout, &remaining) == pdTRUE"
     )
-    if rx_gate not in take:
+    if rx_gate not in take_common:
         errors.append("usb_take receive wake can bypass its overall deadline")
+    if "usb_take_common(report, wait_ms, NULL, true)" not in take or \
+       "usb_take_common(report, wait_ms, generation, false)" not in take_token:
+        errors.append("USB legacy and generation take paths are not distinct")
+    if "*out_generation = item.generation" not in take_common:
+        errors.append("USB generation take does not return the dequeued report token")
 
     mutex = "xSemaphoreTake(s_tx_mutex, remaining)"
     post_mutex = (
         "if (!zero_wait && xTaskCheckForTimeOut(&timeout, &remaining) == pdTRUE)"
     )
     loop = "for (;;)"
-    if not (mutex in send and post_mutex in send and loop in send):
+    if not (mutex in send_common and post_mutex in send_common and
+            loop in send_common):
         errors.append("usb_send lacks the post-mutex deadline gate")
-    elif not (send.index(mutex) < send.index(post_mutex) < send.index(loop)):
+    elif not (send_common.index(mutex) < send_common.index(post_mutex) <
+              send_common.index(loop)):
         errors.append("usb_send post-mutex deadline gate is out of order")
     tx_gate = (
         "xSemaphoreTake(s_tx_wake, remaining) != pdTRUE || "
         "xTaskCheckForTimeOut(&timeout, &remaining) == pdTRUE"
     )
-    if tx_gate not in send:
+    if tx_gate not in send_common:
         errors.append("usb_send endpoint wake can bypass its overall deadline")
+    if "P4_USB_SEND_LEGACY" not in send or \
+       "P4_USB_SEND_GENERATION" not in send_token:
+        errors.append("USB send paths do not separate legacy and saved generation")
+    if "generation != expected_generation" not in send_common:
+        errors.append("USB saved generation is not checked during endpoint waits")
 
     required_event_fragments = (
         "case TINYUSB_EVENT_ATTACHED: p4_usb_queue_reset(&s_rx_queue); "

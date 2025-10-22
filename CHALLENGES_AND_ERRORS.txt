@@ -1558,3 +1558,213 @@ next action
 copy exact sanitized tool output into each new failure entry before committing it
 
 END ENTRY
+
+entry
+0045
+
+time utc
+2026 08 27 23 56 56
+
+stage
+04 CTAPHID transport
+
+action
+inspect generated normal and synthetic wait profile flags before checking their binary markers
+
+observed
+rg: build/sdkconfig: No such file or directory (os error 2)
+
+cause
+the normal build uses the repository root sdkconfig while only isolated profiles keep sdkconfig inside their build directories
+
+fix tried
+query sdkconfig for the normal flags and build/ctaphid-wait-test/sdkconfig for the isolated flags then run the marker checks separately
+
+result
+fixed with normal HID wait and USB bringup disabled synthetic wait enabled only in its profile and each private marker present only in its intended image
+
+commit
+pending add channel and send logic
+
+regression test
+the corrected rg commands and strings checks completed successfully without printing a raw HID path or packet payload
+
+next action
+encode the correct normal sdkconfig location in the stage host profile checker
+
+END ENTRY
+
+entry
+0046
+
+time utc
+2026 08 27 23 56 56
+
+stage
+04 CTAPHID transport
+
+action
+run the complete existing USB host suite after moving the finite transmit loop into usb_send_common
+
+observed
+test_deadline_and_suspend_regression_policies raised ValueError substring not found at tests/host/test_usb.py line 502 while searching for for (;;) after int usb_send(
+
+cause
+the regression still inspected the legacy wrapper even though both send modes now share the deadline loop in usb_send_common
+
+fix tried
+inspect usb_send_common and assert the separate legacy and explicit generation wrappers attach generation change and saved token comparison
+
+result
+fixed and all 16 USB host tests pass
+
+commit
+pending add channel and send logic
+
+regression test
+python3 -m unittest tests.host.test_usb -v
+
+next action
+retain the common loop assertions when adding CTAPHID profile checks
+
+END ENTRY
+
+entry
+0047
+
+time utc
+2026 08 27 23 56 56
+
+stage
+04 CTAPHID transport
+
+action
+perform an independent read only concurrency review of the first transport runtime draft
+
+observed
+the review found reset could time out silently a report could cross or reverse a connection generation boundary a queued current continuation could be drained keepalive time was sampled before send and CANCEL could race a normal final response
+
+cause
+the first draft treated core reset USB queue drain and report take as separate boundaries and made the final cancel check in the stub rather than under the response lock
+
+fix tried
+add a reset request and epoch handshake drain explicit resets while holding the core boundary require current generation to equal the report token atomically substitute the cancel result during final send and timestamp keepalive after successful output
+
+result
+fixed with the repeated independent review finding no remaining blocker and normal and synthetic wait firmware builds passing
+
+commit
+pending add channel and send logic
+
+regression test
+normal build synthetic wait build receive and transmit core tests USB suite and the followup concurrency review
+
+next action
+retain the reset epoch and final cancel source checks in the host check commit
+
+END ENTRY
+
+entry
+0048
+
+time utc
+2026 08 27 23 56 56
+
+stage
+04 CTAPHID transport
+
+action
+review the synthetic wait profile against the selected keepalive timing and CANCEL completion rule
+
+observed
+the draft waited 110 milliseconds despite the documented 100 millisecond cadence and returned without a cancel body if CANCEL arrived between the first cancel check and hid_keepalive
+
+cause
+the draft used extra timing margin and treated every keepalive state error as a terminal disconnect
+
+fix tried
+use a 100 millisecond post send delay recheck cancel after a keepalive error and make hid_send_msg atomically replace any raced normal CBOR body with CTAP2 keepalive cancel
+
+result
+fixed with the repeated read only profile review finding no remaining blocker before the live synthetic cancel probe
+
+commit
+pending add channel and send logic
+
+regression test
+the normal and synthetic profile builds pass and the final live cancel probe will require PROCESSING then silent CANCEL then CBOR 0x2d
+
+next action
+finish the host probe and run the synthetic wait target test before the fifth commit
+
+END ENTRY
+
+entry
+0049
+
+time utc
+2026 08 27 23 56 56
+
+stage
+04 CTAPHID transport
+
+action
+check append only continuity order after adding decisions 0030 and 0031 and errors 0045 through 0048
+
+observed
+the repeated generic END DECISION and END ENTRY patch contexts inserted both uncommitted record groups after the first historical record despite entry 0041 already documenting this exact risk
+
+cause
+the combined patch reused a nonunique terminator instead of the unique final decision 0029 and error 0044 text
+
+fix tried
+move only the new uncommitted blocks after those unique final records then append this new error record and verify numeric order directly
+
+result
+fixed pending ordered identifier and continuity checks
+
+commit
+pending add channel and send logic
+
+regression test
+extract every decision and entry identifier require numeric order then run python3 scripts/state_check.py
+
+next action
+use a unique last record field in every continuity patch without exception
+
+END ENTRY
+
+entry
+0050
+
+time utc
+2026 08 28 00 03 47
+
+stage
+04 CTAPHID transport
+
+action
+verify the normal and isolated generated configuration before the third commit
+
+observed
+the first combined check again queried build/sdkconfig which does not exist for the normal project and stopped before its binary marker checks
+
+cause
+the command repeated the already recorded wrong normal configuration path instead of using the repository sdkconfig generated by the normal build
+
+fix tried
+query sdkconfig for the normal build and build/ctaphid-wait-test/sdkconfig for the isolated build then run all three binary marker and image hash checks
+
+result
+fixed with normal wait marker absent isolated wait marker present bringup marker absent from the wait image and both documented hashes matching
+
+commit
+pending add channel and send logic
+
+regression test
+the corrected exact profile and binary marker command passed
+
+next action
+reuse the two known generated configuration paths in later profile checks
+
+END ENTRY

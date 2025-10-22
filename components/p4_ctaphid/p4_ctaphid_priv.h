@@ -13,6 +13,9 @@ enum {
 };
 
 typedef int (*p4_ctaphid_rand_fn)(void *ctx, uint8_t *out, size_t len);
+typedef int (*p4_ctaphid_emit_fn)(
+    void *ctx,
+    const uint8_t report[P4_CTAPHID_REPORT_BYTES]);
 
 typedef enum {
     P4_CTAPHID_PHASE_IDLE = 0,
@@ -80,6 +83,12 @@ enum {
     P4_CTAPHID_CORE_CID = -6,
 };
 
+enum {
+    P4_CTAPHID_TX_OK = 0,
+    P4_CTAPHID_TX_ARG = -1,
+    P4_CTAPHID_TX_SEND = -2,
+};
+
 void p4_ctaphid_core_init(p4_ctaphid_core_t *core);
 void p4_ctaphid_core_reset(p4_ctaphid_core_t *core);
 
@@ -124,6 +133,12 @@ int p4_ctaphid_chan_allocate(p4_ctaphid_core_t *core,
 void p4_ctaphid_wipe(void *data, size_t len);
 bool p4_ctaphid_time_expired(uint32_t now_ms, uint32_t then_ms,
                              uint32_t timeout_ms);
+int p4_ctaphid_tx_send(uint32_t cid,
+                       uint8_t command,
+                       const uint8_t *data,
+                       size_t data_len,
+                       p4_ctaphid_emit_fn emit,
+                       void *emit_ctx);
 
 _Static_assert(P4_CTAPHID_BUFFER_COUNT == 2,
                "one assembly buffer and one complete handoff buffer");

@@ -1,4 +1,5 @@
 #include "p4_board.h"
+#include "p4_ctaphid.h"
 #include "p4_crypto.h"
 #include "p4_crypto_check.h"
 #if CONFIG_P4KEY_CRYPTO_SELFTEST
@@ -6,6 +7,7 @@
 #endif
 #include "p4_state.h"
 #include "p4_usb.h"
+#include "ctap_stub.h"
 
 #include "esp_err.h"
 #include "esp_log.h"
@@ -118,18 +120,28 @@ void app_main(void)
         ESP_LOGW(tag, "button GPIO is not configured");
     }
 
-    int usb_err = usb_start();
-    if (usb_err != P4_USB_OK) {
-        ESP_LOGE(tag, "USB initialization failed (%d)", usb_err);
+#if CONFIG_P4KEY_USB_BRINGUP
+    int transport_err = usb_start();
+    if (transport_err != P4_USB_OK) {
+        ESP_LOGE(tag, "USB initialization failed (%d)", transport_err);
         return;
     }
 
-#if CONFIG_P4KEY_USB_BRINGUP
     if (!usb_bringup_start()) {
         ESP_LOGE(tag, "USB bringup task creation failed");
         return;
     }
     ESP_LOGW(tag, "fixed USB bringup exchange is enabled");
+#else
+    int transport_err = hid_start();
+    if (transport_err != P4_HID_OK) {
+        ESP_LOGE(tag, "CTAPHID initialization failed (%d)", transport_err);
+        return;
+    }
+    if (!p4_ctap_stub_start()) {
+        ESP_LOGE(tag, "CTAP stub task creation failed");
+        return;
+    }
 #endif
 
     for (;;) {

@@ -1,0 +1,12 @@
+menu "P4Key CTAPHID"
+
+config P4KEY_HID_WAIT_TEST
+    bool "Enable the synthetic CTAPHID cancel wait"
+    depends on !P4KEY_USB_BRINGUP
+    default n
+    help
+        Accept one exact nonproduction CBOR payload, emit PROCESSING
+        keepalives, and finish early when CTAPHID_CANCEL arrives. Keep this
+        disabled in normal firmware.
+
+endmenu

@@ -498,7 +498,7 @@ class UsbSourceTests(unittest.TestCase):
             "xTaskCheckForTimeOut(&timeout, &remaining) == pdTRUE",
             compact,
         )
-        send_start = compact.index("int usb_send(")
+        send_start = compact.index("static int usb_send_common(")
         send_loop = compact.index("for (;;)", send_start)
         mutex_wait = compact.index("xSemaphoreTake(s_tx_mutex, remaining)", send_start)
         mutex_deadline = compact.index(
@@ -506,12 +506,22 @@ class UsbSourceTests(unittest.TestCase):
         )
         self.assertLess(mutex_wait, mutex_deadline)
         self.assertLess(mutex_deadline, send_loop)
+        self.assertIn(
+            "usb_take_common(report, wait_ms, generation, false)", compact
+        )
+        self.assertIn(
+            "usb_send_common(report, generation, wait_ms, "
+            "P4_USB_SEND_GENERATION)",
+            compact,
+        )
+        self.assertIn("generation != expected_generation", compact)
 
         attached = c_case_body(source_without_comments, "TINYUSB_EVENT_ATTACHED")
         detached = c_case_body(source_without_comments, "TINYUSB_EVENT_DETACHED")
         suspended = c_case_body(source_without_comments, "TINYUSB_EVENT_SUSPENDED")
         resumed = c_case_body(source_without_comments, "TINYUSB_EVENT_RESUMED")
         self.assertIn("s_mounted = true;", attached)
+        self.assertIn("s_generation++;", attached)
         self.assertIn("s_mounted = false;", detached)
         self.assertIn("s_ready = false;", suspended)
         self.assertIn("s_generation++;", suspended)

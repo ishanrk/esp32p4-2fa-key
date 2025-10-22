@@ -48,6 +48,11 @@ static uint32_t s_generation;
 static bool s_have_take_generation;
 static uint32_t s_take_generation;
 
+typedef enum {
+    P4_USB_SEND_LEGACY = 0,
+    P4_USB_SEND_GENERATION,
+} p4_usb_send_auth_t;
+
 
 static void count_one(uint32_t *counter)
 {
@@ -118,6 +123,8 @@ static void usb_event(tinyusb_event_t *event, void *arg)
         s_have_take_generation = false;
         s_mounted = true;
         s_ready = true;
+        // every configured host connection gets a fresh response token
+        s_generation++;
         count_one(&s_diag.mounted);
         break;
 
@@ -221,9 +228,13 @@ int usb_start(void)
 }
 
 
-int usb_take(uint8_t report[P4_USB_REPORT_BYTES], uint32_t wait_ms)
+static int usb_take_common(uint8_t report[P4_USB_REPORT_BYTES],
+                           uint32_t wait_ms,
+                           uint32_t *out_generation,
+                           bool remember_for_legacy_send)
 {
-    if (report == NULL) {
+    if (report == NULL ||
+        (out_generation == NULL && !remember_for_legacy_send)) {
         return P4_USB_ERR_ARG;
     }
 
@@ -233,7 +244,9 @@ int usb_take(uint8_t report[P4_USB_REPORT_BYTES], uint32_t wait_ms)
 
     taskENTER_CRITICAL(&s_lock);
     bool started = s_started;
-    s_have_take_generation = false;
+    if (remember_for_legacy_send) {
+        s_have_take_generation = false;
+    }
     taskEXIT_CRITICAL(&s_lock);
     if (!started) {
         return P4_USB_ERR_STATE;
@@ -261,12 +274,17 @@ int usb_take(uint8_t report[P4_USB_REPORT_BYTES], uint32_t wait_ms)
                 taskEXIT_CRITICAL(&s_lock);
                 return P4_USB_ERR_STALE;
             }
-            s_take_generation = item.generation;
-            s_have_take_generation = true;
+            if (remember_for_legacy_send) {
+                s_take_generation = item.generation;
+                s_have_take_generation = true;
+            }
             taskEXIT_CRITICAL(&s_lock);
 
             // copy only after every failure path so errors preserve the caller buffer
             memcpy(report, item.report, P4_USB_REPORT_BYTES);
+            if (out_generation != NULL) {
+                *out_generation = item.generation;
+            }
             return P4_USB_OK;
         }
 
@@ -286,7 +304,24 @@ int usb_take(uint8_t report[P4_USB_REPORT_BYTES], uint32_t wait_ms)
 }
 
 
-int usb_send(const uint8_t report[P4_USB_REPORT_BYTES], uint32_t wait_ms)
+int usb_take(uint8_t report[P4_USB_REPORT_BYTES], uint32_t wait_ms)
+{
+    return usb_take_common(report, wait_ms, NULL, true);
+}
+
+
+int usb_take_with_generation(uint8_t report[P4_USB_REPORT_BYTES],
+                             uint32_t wait_ms,
+                             uint32_t *generation)
+{
+    return usb_take_common(report, wait_ms, generation, false);
+}
+
+
+static int usb_send_common(const uint8_t report[P4_USB_REPORT_BYTES],
+                           uint32_t expected_generation,
+                           uint32_t wait_ms,
+                           p4_usb_send_auth_t auth)
 {
     if (report == NULL) {
         return P4_USB_ERR_ARG;
@@ -305,14 +340,18 @@ int usb_send(const uint8_t report[P4_USB_REPORT_BYTES], uint32_t wait_ms)
     }
 
     int result = P4_USB_ERR_TIMEOUT;
-    uint32_t expected_generation = 0;
+    uint32_t current_generation = 0;
     bool take_matches = false;
-    bool ready = send_state(&expected_generation, &take_matches);
+    bool ready = send_state(&current_generation, &take_matches);
     if (!ready) {
         result = P4_USB_ERR_DISCONNECTED;
         goto done;
     }
-    if (!take_matches) {
+    if (auth == P4_USB_SEND_LEGACY) {
+        expected_generation = current_generation;
+    }
+    if (current_generation != expected_generation ||
+        (auth == P4_USB_SEND_LEGACY && !take_matches)) {
         result = P4_USB_ERR_STALE;
         goto done;
     }
@@ -328,11 +367,12 @@ int usb_send(const uint8_t report[P4_USB_REPORT_BYTES], uint32_t wait_ms)
     for (;;) {
         uint32_t generation;
         ready = send_state(&generation, &take_matches);
-        if (!ready || generation != expected_generation) {
+        if (!ready) {
             result = P4_USB_ERR_DISCONNECTED;
             break;
         }
-        if (!take_matches) {
+        if (generation != expected_generation ||
+            (auth == P4_USB_SEND_LEGACY && !take_matches)) {
             result = P4_USB_ERR_STALE;
             break;
         }
@@ -360,6 +400,21 @@ int usb_send(const uint8_t report[P4_USB_REPORT_BYTES], uint32_t wait_ms)
 done:
     (void)xSemaphoreGive(s_tx_mutex);
     return result;
+}
+
+
+int usb_send(const uint8_t report[P4_USB_REPORT_BYTES], uint32_t wait_ms)
+{
+    return usb_send_common(report, 0, wait_ms, P4_USB_SEND_LEGACY);
+}
+
+
+int usb_send_for_generation(const uint8_t report[P4_USB_REPORT_BYTES],
+                            uint32_t generation,
+                            uint32_t wait_ms)
+{
+    return usb_send_common(report, generation, wait_ms,
+                           P4_USB_SEND_GENERATION);
 }
 
 

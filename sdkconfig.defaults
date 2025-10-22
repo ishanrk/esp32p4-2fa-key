@@ -50,6 +50,7 @@ CONFIG_TINYUSB_VENDOR_COUNT=0
 
 # diagnostic packet exchange stays opt in
 # CONFIG_P4KEY_USB_BRINGUP is not set
+# CONFIG_P4KEY_HID_WAIT_TEST is not set
 
 # stage 01 must stay reversible
 # CONFIG_SECURE_BOOT is not set

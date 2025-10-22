@@ -954,3 +954,73 @@ reconsider when
 a newer pinned CTAP binding defines broadcast INIT arbitration differently or interoperability evidence requires the conservative busy reading
 
 END DECISION
+
+decision
+0030
+
+time utc
+2026 08 27 23 56 56
+
+stage
+04 CTAPHID transport
+
+problem
+the transport task must keep receiving while a separate CTAP task emits keepalive or a final response but the stage 03 usb_send authorization only described the most recent synchronous take and could authorize stale work after reconnect
+
+choice
+return the USB connection generation with each dequeued report save it with the active CTAPHID claim and require it in a new generation aware send path while retaining the legacy usb_take and usb_send pair for the stage 03 bringup image
+
+reason
+the exact report token prevents an old application worker from sending after attach detach or suspend while the independent channel operation generation prevents stale work after same CID INIT and both paths retain finite USB deadlines
+
+alternatives rejected
+retaining one global last take flag would let a new connection reauthorize an old worker
+sampling the USB generation after take would race a disconnect between the report and the sample
+stopping report receive while the CTAP task works would block CANCEL INIT and keepalive transport service
+
+files affected
+components/p4_usb/include/p4_usb.h
+components/p4_usb/p4_usb.c
+components/p4_ctaphid/p4_ctaphid.c
+scripts/usb_common.py
+tests/host/test_usb.py
+
+reconsider when
+the USB component provides an opaque connection object with equivalent lifetime checks
+
+END DECISION
+
+decision
+0031
+
+time utc
+2026 08 27 23 56 56
+
+stage
+04 CTAPHID transport
+
+problem
+framing resynchronization disconnect CANCEL and application completion can occur on separate tasks and must not interleave response fragments or let stale work finish a newer operation
+
+choice
+use one static framing core one bounded complete handoff a core then whole message transmit lock order a reset epoch and an owner bound claim containing both connection and operation generations
+
+reason
+the core lock makes resync cancel and the final cancel decision atomic while the transmit lock covers the complete logical message and the reset epoch discards a report taken across an explicit reset
+
+alternatives rejected
+one lock per frame would allow two logical responses to interleave
+CID matching alone would not distinguish a newer request on the same retained CID
+heap queues or per channel payload allocation are outside the fixed memory transport policy
+
+files affected
+components/p4_ctaphid/include/p4_ctaphid.h
+components/p4_ctaphid/p4_ctaphid.c
+main/ctap_stub.c
+components/p4_ctaphid/Kconfig
+sdkconfig.ctaphid-wait-test.defaults
+
+reconsider when
+a later dispatcher needs concurrent operations and supplies a proven bounded scheduling model
+
+END DECISION

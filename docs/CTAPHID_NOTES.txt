@@ -62,6 +62,31 @@ processing is 0x01
 user presence needed is 0x02
 keepalive does not end a transaction
 the project uses a 100 millisecond cadence and sends a changed status without delay
+the cadence timestamp is taken after a successful report send
+
+runtime ownership
+one static transport task performs report receive framing and immediate replies
+one separate static application task consumes complete CBOR requests
+the framing core mutex is acquired before the whole message transmit mutex
+the whole message mutex remains held across every fragment so responses cannot interleave
+the active application claim records CID operation generation USB generation and owner task
+the final CBOR send atomically substitutes keepalive cancel when CANCEL already won
+no framing channel request or task buffer uses heap allocation
+
+connection reset
+every USB attach detach and suspend boundary advances a connection generation
+usb_take_with_generation returns the token carried by the exact dequeued report
+asynchronous keepalive and final replies must use usb_send_for_generation with that saved token
+the send path rejects the token before and during every finite endpoint wait
+channel operation generation separately rejects stale work after same CID INIT resynchronization
+disconnect resets channels partial requests complete handoff cancel state and application claims
+a reset epoch prevents a report already taken by the transport task from entering reset state
+
+synthetic wait profile
+CONFIG_P4KEY_HID_WAIT_TEST is disabled by default and unavailable with USB bringup
+the exact nonproduction request is P4KEY CTAPHID WAIT TEST v1
+the isolated profile sends PROCESSING keepalive and returns CTAP2 keepalive cancel after CANCEL
+the request marker and wait behavior are absent from the normal image
 
 message timeout
 CTAP 2.2 requires a bounded partial transaction timeout but sets no numeric value

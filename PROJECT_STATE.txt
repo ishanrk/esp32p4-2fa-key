@@ -1,7 +1,7 @@
 P4KEY PROJECT STATE
 
 updated utc
-2026 08 27 23 39 05
+2026 08 28 00 10 27
 
 project
 ESP32-P4 2FA Key
@@ -10,7 +10,7 @@ current stage
 04 CTAPHID transport
 
 stage status
-Prompt 03 is closed at its fifth pushed commit with only the explicitly deferred powered native unplug replug validation still not passed and carried into final acceptance Prompt 04 wire constants and bounded receive channel timeout cancel reset and fixed buffer handoff paths pass their host checks
+Prompt 03 is closed at its fifth pushed commit with the powered native unplug replug validation explicitly deferred and not passed Prompt 04 has two pushed commits and its preserved static transmit runtime generation reset CBOR stub keepalive cancel and isolated wait profile pass the focused 18 CTAPHID RX TX USB tests and normal firmware build before the third commit under the superseding four commit MVP scope
 
 repository path
 /home/ishan/esp32p4-2fa-key
@@ -22,10 +22,10 @@ upstream
 origin/main
 
 local and upstream sync
-synced through 81b306b with zero ahead and zero behind before the second stage 04 commit
+synced through 9242f01 with zero ahead and zero behind before the third stage 04 commit
 
 last successful commit
-81b306b add ctaphid wire constants
+9242f01 build frame receive paths
 
 BOARD
 
@@ -146,8 +146,17 @@ python3 -m unittest tests.host.test_ctaphid_constants -v passed two verified con
 CTAPHID receive checks
 python3 -m unittest tests.host.test_ctaphid_rx -v compiled the actual pure C receive channel and time sources with Wall Wextra Werror then passed all PING boundaries broadcast and retained INIT fragmented input spurious continuation exact and wrapped timeout busy silent CANCEL coherent queue full reset scrub bounded allocation and stale generation cases
 
+CTAPHID transmit checks
+python3 -m unittest tests.host.test_ctaphid_tx -v compiled the actual pure C send source with Wall Wextra Werror and passed exact 0 1 57 58 116 117 and 2048 byte framing reconstruction zero padding validation broadcast INIT and stopped emitter failure cases
+
+CTAPHID runtime regression checks
+python3 -m unittest tests.host.test_ctaphid_tx tests.host.test_ctaphid_rx tests.host.test_usb -v passed 18 tests after the reset epoch current connection atomic cancel and generation aware asynchronous output review fixes
+
+CTAPHID synthetic wait build
+source /home/ishan/esp-idf/export.sh then scripts/build_ctaphid_wait_test.sh passed with CONFIG_P4KEY_HID_WAIT_TEST enabled USB bringup disabled total image size 245940 bytes and p4key.bin SHA 256 015f4b98e375433898470374c42bb29cd94692d946d2d5b68eef85b01773a1ef
+
 Prompt 04 firmware build
-source /home/ishan/esp-idf/export.sh then scripts/build.sh reconfigured and compiled p4_ctaphid_rx.c p4_ctaphid_chan.c and p4_ctaphid_time.c for the ESP32 P4 pre v3 profile then passed at total image size 236080 bytes
+source /home/ishan/esp-idf/export.sh then idf.py -B build build and idf.py -B build size compiled the complete static CTAPHID runtime and normal CBOR invalid command stub for the ESP32 P4 pre v3 profile at total image size 245218 bytes p4key.bin SHA 256 16f3aa9c0a42dc007b5234e4840ac388164db4aac5d1618a2ebc003d3e32b129 with both HID wait and USB bringup disabled
 
 crypto config check
 python3 scripts/check_crypto_config.py passed 18 required and disabled generated release and target profile sdkconfig checks
@@ -240,6 +249,16 @@ same CID INIT clears partial processing cancel and queued request state then ret
 each claimed complete request carries its channel operation generation so a stale consumer cannot cancel finish or wipe newer same CID work after INIT resynchronization
 valid CANCEL only marks the active CBOR operation and produces no direct response action
 the complete host suite passes 35 tests after the receive core addition
+transmit framing serializes every report of one logical response and passes every required payload boundary without heap allocation
+the normal runtime uses one static transport task one static stub task one fixed complete handoff and a core then whole message transmit lock order
+each application claim binds CID channel operation generation USB connection generation command and owner task
+every attach detach and suspend changes the USB connection token and asynchronous output rejects a stale token before and during finite endpoint waits
+an explicit reset request stops an in flight fragmenter while a reset epoch rejects a report taken across the reset boundary
+disconnect resets all channels partial input complete handoff cancel state and application claims then wakes a blocked consumer
+the final CBOR send chooses CTAP2 keepalive cancel under the same lock as response transmission so a processed CANCEL cannot race a normal body
+same keepalive status is limited to the selected 100 millisecond cadence while a changed status may be sent immediately
+the exact synthetic wait request profile is opt in unavailable with bringup and absent from the normal firmware image
+the user moved the only data cable to Type C USB and Windows currently enumerates healthy 303a 4004 FIDO HID nodes while COM7 is intentionally unavailable
 
 WHAT IS BROKEN
 
@@ -258,7 +277,7 @@ negotiated speed is unavailable through the installed Windows HID and PnP tools 
 
 EXACT NEXT ACTION
 
-inspect the reviewed second atomic diff run continuity checks commit build frame receive paths push fetch and confirm exact origin synchronization then add output and runtime logic
+commit the reviewed runtime and send work as add channel and send logic push fetch and confirm exact origin synchronization then add only the minimal host proof needed for live INIT short and 117 byte PING and CBOR invalid command before finish ctaphid mvp
 
 MANUAL ACTIONS STILL REQUIRED
 
@@ -276,4 +295,4 @@ NOTES
 never put a key nonce private scalar decrypted credential record or eFuse secret in this file
 the user removed repository planning copies in published commit 61e622a and attached prompt pack files are the stage instruction source
 Prompt 02 and Prompt 03 are complete under the one named deferred physical exception and Prompt 04 is in progress
-the user authorized only the powered native unplug replug validation to remain deferred when Prompt 04 begins and every other Prompt 03 gate must pass first
+the original Prompt 04 matrix and five commit plan are superseded by the user supplied four commit MVP scope exhaustive fuzz stress synthetic live wait and powered detach reconnect are not Prompt 04 completion gates

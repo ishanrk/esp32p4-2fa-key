@@ -22,6 +22,14 @@ enum {
 int usb_start(void);
 int usb_take(uint8_t report[P4_USB_REPORT_BYTES], uint32_t wait_ms);
 int usb_send(const uint8_t report[P4_USB_REPORT_BYTES], uint32_t wait_ms);
+
+// ctaphid keeps this connection token while another task handles a request
+int usb_take_with_generation(uint8_t report[P4_USB_REPORT_BYTES],
+                             uint32_t wait_ms,
+                             uint32_t *generation);
+int usb_send_for_generation(const uint8_t report[P4_USB_REPORT_BYTES],
+                            uint32_t generation,
+                            uint32_t wait_ms);
 bool usb_ready(void);
 void usb_drop_pending(void);
 uint32_t usb_unmount_generation(void);
