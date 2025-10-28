@@ -1768,3 +1768,108 @@ next action
 reuse the two known generated configuration paths in later profile checks
 
 END ENTRY
+
+entry
+0051
+
+time utc
+2026 08 28 00 22 02
+
+stage
+04 CTAPHID transport MVP
+
+action
+verify the UART port after the user moved the only data cable to PWR USB TO UART
+
+observed
+the first Win32 SerialPort provider query returned no records and printed expected exactly one COM7 even though Windows device manager exposed USB Enhanced SERIAL CH343 COM7
+
+cause
+the Win32 SerialPort provider omitted the present CH343 port and was not a reliable availability check on this host
+
+fix tried
+require the present healthy Ports class record and confirm COM7 through System IO Ports before invoking the pinned esptool
+
+result
+fixed and esptool 5.3.1 connected to ESP32 P4 revision 1.3 then wrote and hash verified only the bootloader partition table and normal application regions without a whole flash erase
+
+commit
+pending finish ctaphid mvp
+
+regression test
+Get PnpDevice reported healthy CH343 COM7 System IO Ports returned COM7 and every esptool written region reported Hash of data verified
+
+next action
+use the present Ports class plus System IO Ports instead of Win32 SerialPort for later COM availability checks
+
+END ENTRY
+
+entry
+0052
+
+time utc
+2026 08 28 00 22 02
+
+stage
+04 CTAPHID transport MVP
+
+action
+prepare the proven Windows Python HID path for the minimal live smoke
+
+observed
+the global Windows Python 3.12.2 returned ModuleNotFoundError No module named hid and no retained temporary environment contained hidapi
+
+cause
+the earlier temporary live HID environment was no longer present and the global interpreter does not retain the host dependency
+
+fix tried
+create a new reversible Windows temporary virtual environment install only the repository pinned hidapi 0.15.0 requirement and copy the minimal probe plus its existing helpers into an isolated temporary layout
+
+result
+fixed with Python 3.12.2 importing hidapi 0.15.0 and the copied minimal probe help command passing
+
+commit
+pending finish ctaphid mvp
+
+regression test
+the isolated interpreter printed Python 3.12.2 hidapi 0.15.0 and parsed ctaphid_mvp_probe.py
+
+next action
+run the isolated probe only after the user moves the cable back to native USB and Windows enumerates the FIDO HID node
+
+END ENTRY
+
+entry
+0053
+
+time utc
+2026 08 28 00 33 34
+
+stage
+04 CTAPHID transport MVP
+
+action
+stage the five final MVP files after every acceptance check passed
+
+observed
+the first staging command included nonexistent tests/host/ctaphid_mvp_probe.py suppressed the pathspec error and staged no files as confirmed by an empty cached name list
+
+cause
+the command added one mistyped duplicate probe path and incorrectly hid its stderr and exit status
+
+fix tried
+inspect status and the cached file list then stage only the five exact existing final MVP paths without an error swallowing wrapper
+
+result
+fixed pending the exact cached diff check and final commit
+
+commit
+pending finish ctaphid mvp
+
+regression test
+require the cached name list to contain exactly the intended five paths before committing
+
+next action
+stage the exact files inspect the cached diff commit push and verify origin
+
+END ENTRY

@@ -140,10 +140,32 @@ static void test_validation_and_emit_failure(void)
 }
 
 
+static void test_keepalive_statuses(void)
+{
+    static const uint8_t statuses[] = {
+        CTAPHID_KEEPALIVE_PROCESSING,
+        CTAPHID_KEEPALIVE_UP_NEEDED,
+    };
+    for (size_t i = 0; i < sizeof(statuses); i++) {
+        capture_t out = {.fail_at = SIZE_MAX};
+        CHECK(p4_ctaphid_tx_send(1, CTAPHID_KEEPALIVE,
+                                 &statuses[i], 1, capture, &out) == 0);
+        CHECK(out.count == 1);
+        CHECK(out.frames[0][4] == CTAPHID_KEEPALIVE);
+        CHECK(out.frames[0][5] == 0 && out.frames[0][6] == 1);
+        CHECK(out.frames[0][7] == statuses[i]);
+        for (size_t byte = 8; byte < P4_CTAPHID_REPORT_BYTES; byte++) {
+            CHECK(out.frames[0][byte] == 0);
+        }
+    }
+}
+
+
 int main(void)
 {
     test_boundaries();
     test_validation_and_emit_failure();
+    test_keepalive_statuses();
     puts("PASS ctaphid send frames");
     return 0;
 }

@@ -1,7 +1,7 @@
 P4KEY PROJECT STATE
 
 updated utc
-2026 08 28 00 10 27
+2026 08 28 00 32 46
 
 project
 ESP32-P4 2FA Key
@@ -10,7 +10,7 @@ current stage
 04 CTAPHID transport
 
 stage status
-Prompt 03 is closed at its fifth pushed commit with the powered native unplug replug validation explicitly deferred and not passed Prompt 04 has two pushed commits and its preserved static transmit runtime generation reset CBOR stub keepalive cancel and isolated wait profile pass the focused 18 CTAPHID RX TX USB tests and normal firmware build before the third commit under the superseding four commit MVP scope
+Prompt 03 is closed at its fifth pushed commit with the powered native unplug replug validation explicitly deferred and not passed Prompt 04 runtime and send commit 2f1025b is pushed and synced the focused 21 CTAPHID MVP tests normal firmware build verified target flash and live native USB INIT short PING 117 byte PING and CBOR invalid command smoke all pass before the fourth and final MVP commit
 
 repository path
 /home/ishan/esp32p4-2fa-key
@@ -22,10 +22,10 @@ upstream
 origin/main
 
 local and upstream sync
-synced through 9242f01 with zero ahead and zero behind before the third stage 04 commit
+synced through 2f1025b with zero ahead and zero behind before the final stage 04 MVP commit
 
 last successful commit
-9242f01 build frame receive paths
+2f1025b add channel and send logic
 
 BOARD
 
@@ -152,11 +152,20 @@ python3 -m unittest tests.host.test_ctaphid_tx -v compiled the actual pure C sen
 CTAPHID runtime regression checks
 python3 -m unittest tests.host.test_ctaphid_tx tests.host.test_ctaphid_rx tests.host.test_usb -v passed 18 tests after the reset epoch current connection atomic cancel and generation aware asynchronous output review fixes
 
+CTAPHID MVP checks
+python3 -m unittest tests.host.test_ctaphid_mvp tests.host.test_ctaphid_tx tests.host.test_ctaphid_rx tests.host.test_usb -v passed 21 tests including the minimal INIT allocated CID nonce echo short PING 117 byte PING CBOR invalid command 57 59 fragmentation both keepalive statuses and no heap guards
+
 CTAPHID synthetic wait build
 source /home/ishan/esp-idf/export.sh then scripts/build_ctaphid_wait_test.sh passed with CONFIG_P4KEY_HID_WAIT_TEST enabled USB bringup disabled total image size 245940 bytes and p4key.bin SHA 256 015f4b98e375433898470374c42bb29cd94692d946d2d5b68eef85b01773a1ef
 
 Prompt 04 firmware build
 source /home/ishan/esp-idf/export.sh then idf.py -B build build and idf.py -B build size compiled the complete static CTAPHID runtime and normal CBOR invalid command stub for the ESP32 P4 pre v3 profile at total image size 245218 bytes p4key.bin SHA 256 16f3aa9c0a42dc007b5234e4840ac388164db4aac5d1618a2ebc003d3e32b129 with both HID wait and USB bringup disabled
+
+Prompt 04 MVP target flash
+Windows Python with esptool 5.3.1 on COM7 connected to ESP32 P4 revision 1.3 and wrote then hash verified only bootloader at 0x2000 partition table at 0x8000 and normal p4key.bin at 0x10000 using DIO 40 MHz 16 MB and hard reset without force or whole flash erase
+
+Prompt 04 MVP live probe
+the prepared elevated Windows Python 3.12.2 hidapi 0.15.0 probe passed broadcast INIT valid allocated channel and nonce echo short 9 byte PING 117 byte PING across 57 plus 59 plus 1 data bytes and CBOR stub CTAP invalid command on the healthy native 303a 4004 FIDO HID interface
 
 crypto config check
 python3 scripts/check_crypto_config.py passed 18 required and disabled generated release and target profile sdkconfig checks
@@ -171,7 +180,7 @@ USB test
 python3 scripts/usb_desc_check.py passed all source checks one user approved elevated Windows process proved exactly one 303a 4004 FIDO HID interface and the exact 64 byte bringup exchange then the final normal image passed the elevated 2000 millisecond no response probe
 
 FIDO test
-not attempted
+minimal Prompt 04 live CTAPHID INIT short PING 117 byte PING and CBOR invalid command smoke passed
 
 manual browser test
 not attempted
@@ -258,7 +267,7 @@ disconnect resets all channels partial input complete handoff cancel state and a
 the final CBOR send chooses CTAP2 keepalive cancel under the same lock as response transmission so a processed CANCEL cannot race a normal body
 same keepalive status is limited to the selected 100 millisecond cadence while a changed status may be sent immediately
 the exact synthetic wait request profile is opt in unavailable with bringup and absent from the normal firmware image
-the user moved the only data cable to Type C USB and Windows currently enumerates healthy 303a 4004 FIDO HID nodes while COM7 is intentionally unavailable
+the user moved the only data cable back to Type C USB and Windows enumerates two healthy 303a 4004 FIDO HID nodes after the normal Prompt 04 MVP firmware flash
 
 WHAT IS BROKEN
 
@@ -277,11 +286,11 @@ negotiated speed is unavailable through the installed Windows HID and PnP tools 
 
 EXACT NEXT ACTION
 
-commit the reviewed runtime and send work as add channel and send logic push fetch and confirm exact origin synchronization then add only the minimal host proof needed for live INIT short and 117 byte PING and CBOR invalid command before finish ctaphid mvp
+rerun the focused 21 CTAPHID MVP tests inspect the final diff commit finish ctaphid mvp push fetch verify exact origin synchronization and stop without beginning any Prompt 05
 
 MANUAL ACTIONS STILL REQUIRED
 
-later provide a second known data capable USB C cable for the deferred powered native unplug replug and UART counter validation which remains not passed
+the powered native unplug replug and UART counter validation remains deferred and not passed and is not an MVP completion gate
 inspect the board rear or package for a PCB revision marking
 press BOOT during a later level diagnostic to directly confirm raw level 0
 later perform website registration and login during the prompt that requests it
