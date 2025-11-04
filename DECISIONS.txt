@@ -1024,3 +1024,39 @@ reconsider when
 a later dispatcher needs concurrent operations and supplies a proven bounded scheduling model
 
 END DECISION
+
+decision
+0032
+
+time utc
+2026 08 28 01 26 01
+
+stage
+05 GetInfo MVP
+
+problem
+GetInfo and the next two credential commands need small CBOR encode and decode support without importing a generic framework heap allocation or an unbounded parser
+
+choice
+use one caller owned fixed buffer CBOR core capped at 2048 bytes with definite length canonical encoding maps arrays text byte strings signed and unsigned integers booleans a bounded recursive skip and a 32 bit duplicate known integer key mask
+
+reason
+the selected types cover the shortened MVP response and anticipated credential request fields while exact byte item and depth limits make every operation finite and keep output compatible with strict standard FIDO tooling
+
+alternatives rejected
+adding a generic CBOR component would expand the parser and dependency surface beyond this MVP
+heap backed dynamic values would violate the established fixed memory policy
+accepting indefinite or nonminimal encodings would weaken deterministic CTAP CBOR behavior
+
+files affected
+components/p4_ctap/include/p4_cbor.h
+components/p4_ctap/p4_cbor.c
+components/p4_ctap/include/p4_ctap.h
+components/p4_ctap/p4_ctap.c
+tests/host/ctap_core_test.c
+tests/host/test_ctap_core.py
+
+reconsider when
+a required later CTAP command cannot be represented within the pinned 2048 byte message and explicit bounded type set
+
+END DECISION

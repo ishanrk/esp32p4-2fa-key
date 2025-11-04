@@ -1,16 +1,16 @@
 P4KEY PROJECT STATE
 
 updated utc
-2026 08 28 00 32 46
+2026 08 28 01 26 01
 
 project
 ESP32-P4 2FA Key
 
 current stage
-04 CTAPHID transport
+05 GetInfo MVP
 
 stage status
-Prompt 03 is closed at its fifth pushed commit with the powered native unplug replug validation explicitly deferred and not passed Prompt 04 runtime and send commit 2f1025b is pushed and synced the focused 21 CTAPHID MVP tests normal firmware build verified target flash and live native USB INIT short PING 117 byte PING and CBOR invalid command smoke all pass before the fourth and final MVP commit
+Prompt 04 MVP is complete and synced at f5f1d79 with live INIT short PING 117 byte PING and CBOR invalid command passing Prompt 05 bounded CBOR and default CTAP dispatcher core pass their focused host test and compile in the normal ESP32 P4 firmware before the first Prompt 05 commit
 
 repository path
 /home/ishan/esp32p4-2fa-key
@@ -22,10 +22,10 @@ upstream
 origin/main
 
 local and upstream sync
-synced through 2f1025b with zero ahead and zero behind before the final stage 04 MVP commit
+synced through f5f1d79 with zero ahead and zero behind before the first stage 05 MVP commit
 
 last successful commit
-2f1025b add channel and send logic
+f5f1d79 finish ctaphid mvp
 
 BOARD
 
@@ -112,6 +112,12 @@ irreversible provisioning
 not performed
 
 LAST SUCCESSFUL COMMANDS
+
+Prompt 05 core host test
+python3 -m unittest tests.host.test_ctap_core -v compiled the actual bounded CBOR and CTAP dispatcher C sources with Wall Wextra Werror and passed canonical encode decode nested skip duplicate known key malformed bounds and default invalid command checks
+
+Prompt 05 core firmware build
+source /home/ishan/esp-idf/export.sh then idf.py -B build reconfigure and idf.py -B build build compiled p4_cbor.c and p4_ctap.c for the established ESP32 P4 pre v3 profile and produced a 245584 byte normal image with 77 percent app partition free SHA 256 16f3aa9c0a42dc007b5234e4840ac388164db4aac5d1618a2ebc003d3e32b129
 
 firmware build
 source /home/ishan/esp-idf/export.sh then scripts/build.sh passed after the final PHY route clock guard with total image size 236080 bytes and 77 percent app partition free SHA 256 b7cacbe36b768d9b5e900c5fd8dc62b4bcdd5f9d4886ee878c72ecd327eade52
@@ -268,6 +274,8 @@ the final CBOR send chooses CTAP2 keepalive cancel under the same lock as respon
 same keepalive status is limited to the selected 100 millisecond cadence while a changed status may be sent immediately
 the exact synthetic wait request profile is opt in unavailable with bringup and absent from the normal firmware image
 the user moved the only data cable back to Type C USB and Windows enumerates two healthy 303a 4004 FIDO HID nodes after the normal Prompt 04 MVP firmware flash
+the minimal Prompt 05 CBOR core uses fixed caller buffers definite length canonical output bounded maps arrays text byte strings integers booleans and recursive skip with no heap allocation
+the default CTAP dispatcher returns invalid command for unimplemented commands and compiles in the normal ESP32 P4 firmware
 
 WHAT IS BROKEN
 
@@ -286,7 +294,7 @@ negotiated speed is unavailable through the installed Windows HID and PnP tools 
 
 EXACT NEXT ACTION
 
-rerun the focused 21 CTAPHID MVP tests inspect the final diff commit finish ctaphid mvp push fetch verify exact origin synchronization and stop without beginning any Prompt 05
+inspect and commit the bounded CBOR and CTAP core as add minimal cbor and ctap core push verify origin then implement only authenticatorGetInfo and its focused host and target tests
 
 MANUAL ACTIONS STILL REQUIRED
 
@@ -303,5 +311,5 @@ NOTES
 
 never put a key nonce private scalar decrypted credential record or eFuse secret in this file
 the user removed repository planning copies in published commit 61e622a and attached prompt pack files are the stage instruction source
-Prompt 02 and Prompt 03 are complete under the one named deferred physical exception and Prompt 04 is in progress
-the original Prompt 04 matrix and five commit plan are superseded by the user supplied four commit MVP scope exhaustive fuzz stress synthetic live wait and powered detach reconnect are not Prompt 04 completion gates
+Prompt 02 and Prompt 03 are complete under the one named deferred physical exception and Prompt 04 MVP is complete at four total stage commits
+the shortened user supplied Prompt 05 supersedes the original prompt pack stage and permits at most three coherent commits without MakeCredential GetAssertion storage PIN UV resident credentials passkeys or extensions

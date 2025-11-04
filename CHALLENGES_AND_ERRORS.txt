@@ -1873,3 +1873,38 @@ next action
 stage the exact files inspect the cached diff commit push and verify origin
 
 END ENTRY
+
+entry
+0054
+
+time utc
+2026 08 28 01 26 01
+
+stage
+05 GetInfo MVP
+
+action
+add malformed nonminimal integer coverage to the focused CBOR core test
+
+observed
+the first strict host compile failed because the new uint64 integer test variable reused the existing boolean variable name in the same function scope
+
+cause
+the added boundary assertion used a generic local name already declared later in the function
+
+fix tried
+rename the integer local to a distinct descriptive name and rerun the same strict compile and executable
+
+result
+fixed and the focused test passed with Wall Wextra Werror
+
+commit
+pending add minimal cbor and ctap core
+
+regression test
+python3 -m unittest tests.host.test_ctap_core -v passed
+
+next action
+keep distinct type specific local names when extending the compact C harness
+
+END ENTRY
