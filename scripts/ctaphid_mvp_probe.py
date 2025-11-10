@@ -26,7 +26,7 @@ BROADCAST_CID = 0xFFFFFFFF
 CTAPHID_PING = 0x81
 CTAPHID_INIT = 0x86
 CTAPHID_CBOR = 0x90
-CTAP_INVALID_COMMAND = 0x01
+CTAP_OK = 0x00
 
 
 class MvpProbeError(ValueError):
@@ -139,9 +139,9 @@ def run_smoke(handle, wait_ms, output=sys.stdout):
     print("PASS multi frame PING echoed 117 bytes", file=output)
 
     response = exchange(handle, cid, CTAPHID_CBOR, b"\x04", wait_ms)
-    if response != bytes([CTAP_INVALID_COMMAND]):
-        raise MvpProbeError("CBOR stub did not return CTAP invalid command")
-    print("PASS CBOR stub returned CTAP invalid command", file=output)
+    if len(response) < 2 or response[0] != CTAP_OK:
+        raise MvpProbeError("CBOR GetInfo did not reach the application")
+    print("PASS CBOR GetInfo reached the application", file=output)
 
 
 def probe(vid, pid, wait_ms, selected_path=None,

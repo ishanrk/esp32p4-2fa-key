@@ -4,6 +4,7 @@
 
 #include "p4_ctaphid.h"
 #include "p4_ctaphid_wire.h"
+#include "p4_ctap.h"
 #include "p4_crypto.h"
 
 #include <string.h>
@@ -21,6 +22,7 @@ static StaticTask_t s_stub_task_storage;
 static StackType_t
     s_stub_stack[P4_CTAP_STUB_STACK_BYTES / sizeof(StackType_t)];
 static uint8_t s_request[P4_CTAPHID_MAX_PAYLOAD];
+static uint8_t s_response[P4_CTAP_MAX_MESSAGE];
 
 #if CONFIG_P4KEY_HID_WAIT_TEST
 static const uint8_t s_wait_request[] = "P4KEY CTAPHID WAIT TEST v1";
@@ -30,13 +32,29 @@ _Static_assert(P4_CTAP_STUB_STACK_BYTES % sizeof(StackType_t) == 0,
                "ctap stub stack alignment");
 
 
+static void send_dispatch_result(uint32_t cid, uint8_t command,
+                                 size_t request_len)
+{
+    size_t response_len = 0;
+    int error = p4_ctap_dispatch(s_request, request_len,
+                                 s_response, sizeof(s_response),
+                                 &response_len);
+    if (error != P4_CTAP_OK) {
+        s_response[0] = P4_CTAP_STATUS_OTHER;
+        response_len = 1;
+    }
+    (void)hid_send_msg(cid, command, s_response, response_len);
+    secret_clear(s_response, sizeof(s_response));
+}
+
+
+#if CONFIG_P4KEY_HID_WAIT_TEST
 static void send_stub_result(uint32_t cid, uint8_t result)
 {
     (void)hid_send_msg(cid, CTAPHID_CBOR, &result, 1);
 }
 
 
-#if CONFIG_P4KEY_HID_WAIT_TEST
 static bool is_wait_request(const uint8_t *request, size_t request_len)
 {
     return request_len == sizeof(s_wait_request) - 1 &&
@@ -101,7 +119,7 @@ static void ctap_stub_task(void *arg)
         }
 #endif
 
-        send_stub_result(cid, CTAP1_ERR_INVALID_COMMAND);
+        send_dispatch_result(cid, command, request_len);
         secret_clear(s_request, sizeof(s_request));
     }
 }

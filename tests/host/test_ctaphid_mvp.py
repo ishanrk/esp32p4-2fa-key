@@ -64,7 +64,7 @@ class FakeHandle:
             elif request["command"] == mvp.CTAPHID_PING:
                 response = payload
             else:
-                response = bytes([mvp.CTAP_INVALID_COMMAND])
+                response = b"\x00\xa0"
             self.pending.extend(
                 mvp.encode_reports(request["cid"], request["command"], response)
             )
@@ -133,7 +133,7 @@ class CtaphidMvpTests(unittest.TestCase):
                 "PASS INIT allocated a valid channel and echoed the nonce",
                 "PASS short PING echoed 9 bytes",
                 "PASS multi frame PING echoed 117 bytes",
-                "PASS CBOR stub returned CTAP invalid command",
+                "PASS CBOR GetInfo reached the application",
             ],
         )
 
@@ -156,7 +156,10 @@ class CtaphidMvpTests(unittest.TestCase):
         )
         stub = (ROOT / "main" / "ctap_stub.c").read_text(encoding="utf-8")
         self.assertIn(
-            "send_stub_result(cid, CTAP1_ERR_INVALID_COMMAND);", stub
+            "p4_ctap_dispatch(s_request, request_len,", stub
+        )
+        self.assertIn(
+            "hid_send_msg(cid, command, s_response, response_len);", stub
         )
 
 

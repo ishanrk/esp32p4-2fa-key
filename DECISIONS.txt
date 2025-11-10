@@ -1060,3 +1060,39 @@ reconsider when
 a required later CTAP command cannot be represented within the pinned 2048 byte message and explicit bounded type set
 
 END DECISION
+
+decision
+0033
+
+time utc
+2026 08 28 01 36 26
+
+stage
+05 GetInfo MVP
+
+problem
+standard FIDO tooling must recognize the development board without the authenticator claiming any credential feature that is not implemented
+
+choice
+return one canonical eight key GetInfo map with versions FIDO 2 0 stable source controlled AAGUID e9c01741 4d6d 4a49 9e89 b4b36f5c21a2 options rk false and up true max message 2048 list count 16 credential ID length 128 transport usb and one ES256 algorithm minus 7
+
+reason
+the map contains exactly the shortened MVP facts requested by the user decodes under strict python fido2 2.0.0 and omits extensions client PIN UV resident credential support and every later feature
+
+alternatives rejected
+an all zero or runtime generated AAGUID would not be a stable source controlled authenticator identity
+advertising MakeCredential GetAssertion PIN UV extensions or resident credentials before implementation would be false capability signaling
+omitting the bounded list and credential ID sizes would discard explicit interoperability limits selected for the next MVP stages
+
+files affected
+components/p4_ctap/p4_get_info.c
+components/p4_ctap/p4_ctap.c
+main/ctap_stub.c
+scripts/ctap_get_info_probe.py
+scripts/fido2_get_info.py
+tests/host/ctap_get_info_test.c
+
+reconsider when
+a production AAGUID is assigned or a later completed stage adds a capability that must truthfully appear in GetInfo
+
+END DECISION

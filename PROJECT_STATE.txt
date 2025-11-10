@@ -1,7 +1,7 @@
 P4KEY PROJECT STATE
 
 updated utc
-2026 08 28 01 26 01
+2026 08 28 01 36 26
 
 project
 ESP32-P4 2FA Key
@@ -10,7 +10,7 @@ current stage
 05 GetInfo MVP
 
 stage status
-Prompt 04 MVP is complete and synced at f5f1d79 with live INIT short PING 117 byte PING and CBOR invalid command passing Prompt 05 bounded CBOR and default CTAP dispatcher core pass their focused host test and compile in the normal ESP32 P4 firmware before the first Prompt 05 commit
+Prompt 04 MVP is complete and synced at f5f1d79 Prompt 05 bounded CBOR and CTAP core commit 6cbaa5e is pushed and synced the exact GetInfo implementation dispatcher integration focused 26 host regressions strict python fido2 fixture normal firmware build and isolated wait profile build pass before the second Prompt 05 commit live target validation is not yet claimed
 
 repository path
 /home/ishan/esp32p4-2fa-key
@@ -22,10 +22,10 @@ upstream
 origin/main
 
 local and upstream sync
-synced through f5f1d79 with zero ahead and zero behind before the first stage 05 MVP commit
+synced through 6cbaa5e with zero ahead and zero behind before the second stage 05 MVP commit
 
 last successful commit
-f5f1d79 finish ctaphid mvp
+6cbaa5e add minimal cbor and ctap core
 
 BOARD
 
@@ -92,7 +92,7 @@ host OS
 Ubuntu under WSL2 Linux 6.6.87.2 x86_64 does not own the board USB while Windows loads healthy HID compliant fido nodes for 303a 4004 and an explicitly user approved elevated process proved raw FIDO HID access
 
 host fido tool version
-not installed
+python fido2 2.0.0 pinned in requirements-host and verified against the exact response in an isolated host environment live Windows recognition remains pending the target flash
 
 ROOT MODE
 
@@ -118,6 +118,18 @@ python3 -m unittest tests.host.test_ctap_core -v compiled the actual bounded CBO
 
 Prompt 05 core firmware build
 source /home/ishan/esp-idf/export.sh then idf.py -B build reconfigure and idf.py -B build build compiled p4_cbor.c and p4_ctap.c for the established ESP32 P4 pre v3 profile and produced a 245584 byte normal image with 77 percent app partition free SHA 256 16f3aa9c0a42dc007b5234e4840ac388164db4aac5d1618a2ebc003d3e32b129
+
+Prompt 05 GetInfo host regressions
+python3 -m unittest tests.host.test_ctap_core tests.host.test_ctap_get_info tests.host.test_get_info_probe tests.host.test_ctaphid_mvp tests.host.test_ctaphid_tx tests.host.test_ctaphid_rx tests.host.test_usb -v passed 26 focused tests including five identical canonical responses malformed request recovery output capacity no heap and the established CTAPHID and USB behavior
+
+Prompt 05 standard decoder fixture
+the pinned python fido2 2.0.0 decoded and reencoded the exact 79 byte canonical CBOR body then its Info model accepted only FIDO 2 0 the fixed 16 byte AAGUID rk false up true max message 2048 list count 16 credential ID length 128 usb and ES256
+
+Prompt 05 normal firmware build
+source /home/ishan/esp-idf/export.sh then idf.py -B build build and idf.py -B build size compiled and linked the GetInfo dispatcher into the established ESP32 P4 pre v3 profile producing total image size 246846 bytes p4key.bin size 0x3c5b0 with 76 percent app partition free SHA 256 cc4aa5d216b67222fc997829b6bf19709c3087ac0501114086f55a60c70b219f
+
+Prompt 05 synthetic wait regression build
+source /home/ishan/esp-idf/export.sh then scripts/build_ctaphid_wait_test.sh passed with the existing opt in wait interception before the new dispatcher and produced a 247586 byte image
 
 firmware build
 source /home/ishan/esp-idf/export.sh then scripts/build.sh passed after the final PHY route clock guard with total image size 236080 bytes and 77 percent app partition free SHA 256 b7cacbe36b768d9b5e900c5fd8dc62b4bcdd5f9d4886ee878c72ecd327eade52
@@ -276,10 +288,14 @@ the exact synthetic wait request profile is opt in unavailable with bringup and 
 the user moved the only data cable back to Type C USB and Windows enumerates two healthy 303a 4004 FIDO HID nodes after the normal Prompt 04 MVP firmware flash
 the minimal Prompt 05 CBOR core uses fixed caller buffers definite length canonical output bounded maps arrays text byte strings integers booleans and recursive skip with no heap allocation
 the default CTAP dispatcher returns invalid command for unimplemented commands and compiles in the normal ESP32 P4 firmware
+authenticatorGetInfo returns one canonical eight key map with only FIDO 2 0 a stable 16 byte AAGUID rk false up true max message 2048 list count 16 credential ID length 128 usb and ES256 algorithm minus 7
+the production CTAP task dispatches the existing fixed CTAPHID CBOR handoff into a separate static response buffer sends through the claimed command and clears both fixed buffers after the synchronous send
+the direct Prompt 05 probe requires five exact 80 byte status plus CBOR responses invalid CBOR for a trailing malformed byte and immediate recovery while the standard probe uses python fido2 strict decoding
 
 WHAT IS BROKEN
 
 WSL does not own the native USB device and Windows requires elevation for raw access to the FIDO HID collection
+the new Prompt 05 firmware is built but has not yet been flashed so live GetInfo and standard FIDO tooling recognition remain pending
 the powered unplug replug without reboot evidence remains pending
 the powered unplug replug counter gate cannot be proven with only one data capable cable and is explicitly deferred not passed and carried into the final acceptance checklist
 physical PCB revision is not established
@@ -294,10 +310,11 @@ negotiated speed is unavailable through the installed Windows HID and PnP tools 
 
 EXACT NEXT ACTION
 
-inspect and commit the bounded CBOR and CTAP core as add minimal cbor and ctap core push verify origin then implement only authenticatorGetInfo and its focused host and target tests
+inspect and commit the GetInfo implementation as implement fido get info push verify origin then ask the user to move the only data cable from native USB to PWR USB TO UART for the exact non erase flash
 
 MANUAL ACTIONS STILL REQUIRED
 
+when explicitly requested move the only data cable from native USB to PWR USB TO UART for flashing then move it back only when explicitly requested for live GetInfo
 the powered native unplug replug and UART counter validation remains deferred and not passed and is not an MVP completion gate
 inspect the board rear or package for a PCB revision marking
 press BOOT during a later level diagnostic to directly confirm raw level 0

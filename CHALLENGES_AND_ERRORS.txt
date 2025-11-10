@@ -1908,3 +1908,73 @@ next action
 keep distinct type specific local names when extending the compact C harness
 
 END ENTRY
+
+entry
+0055
+
+time utc
+2026 08 28 01 36 26
+
+stage
+05 GetInfo MVP
+
+action
+build the normal firmware after integrating the CTAP dispatcher
+
+observed
+the first successful build emitted an unused function warning for send_stub_result because the normal profile no longer used the old invalid command stub while the synthetic wait profile still required the helper
+
+cause
+the helper remained outside its CONFIG P4KEY HID WAIT TEST conditional after the normal dispatch path changed
+
+fix tried
+move only send_stub_result inside the existing synthetic wait conditional and rebuild both the normal and isolated wait profiles
+
+result
+fixed with the normal warning absent and both firmware profiles building successfully
+
+commit
+pending implement fido get info
+
+regression test
+idf.py -B build build and scripts/build_ctaphid_wait_test.sh passed
+
+next action
+keep profile specific helpers inside the same compile time guard as their only callers
+
+END ENTRY
+
+entry
+0056
+
+time utc
+2026 08 28 01 36 26
+
+stage
+05 GetInfo MVP
+
+action
+review maintained live probes against the evolved GetInfo production behavior
+
+observed
+the old Prompt 04 transport probe still required command 04 to return the superseded invalid command stub and its fake host test masked the mismatch
+
+cause
+the source policy assertion was updated for the dispatcher but the historical live probe expectation remained stage 04 specific
+
+fix tried
+change the old transport smoke to require a successful nonempty GetInfo application response update its fake and leave exact canonical fields repetitions and malformed recovery to the new Prompt 05 probe
+
+result
+fixed and all focused Prompt 04 and Prompt 05 probe tests pass without duplicate exact response fixtures
+
+commit
+pending implement fido get info
+
+regression test
+python3 -m unittest tests.host.test_ctaphid_mvp tests.host.test_get_info_probe -v passed
+
+next action
+run the exact Prompt 05 probe rather than the historical transport probe for target acceptance
+
+END ENTRY
