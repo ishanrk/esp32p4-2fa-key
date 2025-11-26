@@ -1,4 +1,5 @@
 #include "p4_board.h"
+#include "p4_cred.h"
 #include "p4_ctaphid.h"
 #include "p4_crypto.h"
 #include "p4_crypto_check.h"
@@ -101,6 +102,12 @@ void app_main(void)
         return;
     }
 #endif
+
+    int cred_err = p4_cred_init();
+    if (cred_err != P4_CRED_OK) {
+        ESP_LOGE(tag, "credential root initialization failed (%d)", cred_err);
+        return;
+    }
 
     esp_err_t err = p4_board_init();
     if (err != ESP_OK) {
