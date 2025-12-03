@@ -1,13 +1,8 @@
 #include "p4_ctap_priv.h"
 
+#include "p4_aaguid.h"
 #include "p4_cbor.h"
 #include "p4_ctap.h"
-
-
-static const uint8_t s_aaguid[16] = {
-    0xe9, 0xc0, 0x17, 0x41, 0x4d, 0x6d, 0x4a, 0x49,
-    0x9e, 0x89, 0xb4, 0xb3, 0x6f, 0x5c, 0x21, 0xa2,
-};
 
 
 #define PUT(value) do { if (!(value)) return P4_CTAP_ERR_SMALL; } while (0)
@@ -33,7 +28,7 @@ int p4_ctap_get_info(uint8_t *response,
     PUT(p4_cbor_put_text(&writer, "FIDO_2_0", sizeof("FIDO_2_0") - 1));
 
     PUT(p4_cbor_put_uint(&writer, 3));
-    PUT(p4_cbor_put_bytes(&writer, s_aaguid, sizeof(s_aaguid)));
+    PUT(p4_cbor_put_bytes(&writer, p4_aaguid, P4_AAGUID_LEN));
 
     PUT(p4_cbor_put_uint(&writer, 4));
     PUT(p4_cbor_put_map(&writer, 2));

@@ -6,13 +6,13 @@ import unittest
 
 
 ROOT = pathlib.Path(__file__).resolve().parents[2]
-COMPONENT = ROOT / "components" / "p4_ctap"
+COMPONENT = ROOT / "components" / "p4_cred"
 
 
-class CtapGetInfoTests(unittest.TestCase):
-    def test_actual_get_info_dispatch_and_cbor(self):
+class WrappedCredentialTests(unittest.TestCase):
+    def test_actual_credential_source(self):
         with tempfile.TemporaryDirectory() as tmp:
-            output = pathlib.Path(tmp) / "ctap_get_info_test"
+            output = pathlib.Path(tmp) / "cred_wrap_test"
             subprocess.run(
                 [
                     "cc",
@@ -23,12 +23,12 @@ class CtapGetInfoTests(unittest.TestCase):
                     "-I",
                     str(COMPONENT / "include"),
                     "-I",
-                    str(ROOT / "components" / "p4_cred" / "include"),
-                    str(ROOT / "tests" / "host" / "ctap_get_info_test.c"),
-                    str(COMPONENT / "p4_cbor.c"),
-                    str(COMPONENT / "p4_ctap.c"),
-                    str(COMPONENT / "p4_get_info.c"),
-                    str(ROOT / "components" / "p4_cred" / "p4_aaguid.c"),
+                    str(COMPONENT),
+                    "-I",
+                    str(ROOT / "components" / "p4_crypto" / "include"),
+                    str(ROOT / "tests" / "host" / "cred_wrap_test.c"),
+                    str(COMPONENT / "p4_cred.c"),
+                    str(COMPONENT / "p4_aaguid.c"),
                     "-o",
                     str(output),
                 ],
@@ -42,10 +42,10 @@ class CtapGetInfoTests(unittest.TestCase):
             )
             self.assertEqual(
                 result.stdout,
-                "PASS minimal authenticator get info\n",
+                "PASS exact wrapped credential format and failures\n",
             )
 
-    def test_ctap_component_has_no_heap_calls(self):
+    def test_credential_component_has_no_heap_or_logging(self):
         sources = "\n".join(
             path.read_text(encoding="utf-8")
             for path in sorted(COMPONENT.glob("*.c"))
@@ -59,6 +59,8 @@ class CtapGetInfoTests(unittest.TestCase):
                 without_comments,
             )
         )
+        self.assertNotIn("ESP_LOG_BUFFER", sources)
+        self.assertNotIn("printf", sources)
 
 
 if __name__ == "__main__":
