@@ -1,16 +1,16 @@
 P4KEY PROJECT STATE
 
 updated utc
-2026 08 28 01 45 13
+2026 08 28 02 17 48
 
 project
 ESP32-P4 2FA Key
 
 current stage
-05 GetInfo MVP
+06 persistent wrapped credentials MVP
 
 stage status
-Prompt 04 MVP is complete and synced at f5f1d79 the shortened Prompt 05 MVP is complete with bounded CBOR CTAP dispatch and exact GetInfo commits 6cbaa5e and ba05a0b pushed and synced focused host tests normal firmware build bounded target flash live native CTAPHID GetInfo malformed recovery and strict python fido2 recognition all passing this state is the third and final Prompt 05 verification commit candidate
+Prompt 05 MVP is complete and synced at 6b682d6 the shortened persistent credential stage has its fail closed development NVS root commit bbe81cf and exact 100 byte hardware AES GCM wrapped credential commit 68d5f94 pushed and synced focused host tests normal and opt in reboot builds real target wrap open and software reboot persistence proof all pass the normal default off firmware is restored and this state is the third and final verification commit candidate
 
 repository path
 /home/ishan/esp32p4-2fa-key
@@ -22,10 +22,10 @@ upstream
 origin/main
 
 local and upstream sync
-main and origin main were synced through ba05a0b with zero ahead and zero behind before the final target evidence commit and must be verified identical immediately after that commit is pushed
+main and origin main are synced through 68d5f94 with zero ahead and zero behind before the final target evidence commit and must be verified identical immediately after that commit is pushed
 
 last successful commit
-ba05a0b implement fido get info before the final target evidence commit
+68d5f94 wrap credentials with hardware aes before the final target evidence commit
 
 BOARD
 
@@ -52,6 +52,9 @@ Type C USB is FS PHY0 GPIO24 D minus GPIO25 D plus which defaults to USB Serial 
 
 logging connector
 Type-C PWR USB TO UART through CH343P on GPIO37 and GPIO38 Windows COM7
+
+current cable position
+the single data capable cable remains on PWR USB TO UART after the completed target proof and normal firmware restore
 
 button GPIO
 35 BOOT Key2 candidate for user presence
@@ -100,7 +103,7 @@ selected mode
 development
 
 development root status
-not created
+one exact 32 byte development root was created on the attached board from the production hardware RNG path stored as one NVS blob committed then loaded unchanged after software reboot and retained when the normal firmware was restored wrong size read and commit failures remain fail closed without regeneration
 
 hardware HMAC slot
 not selected
@@ -112,6 +115,21 @@ irreversible provisioning
 not performed
 
 LAST SUCCESSFUL COMMANDS
+
+persistent credential host tests
+python3 -m unittest tests.host.test_cred_root tests.host.test_cred_wrap -v compiled the actual root and credential sources with Wall Wextra Werror then passed four focused tests covering first boot and exact reload NVS failures exact 100 byte format round trip wrong RP ciphertext and tag tamper 99 and 101 byte IDs zero scalar output clearing no heap and no sensitive logging
+
+persistent credential normal firmware build
+source /home/ishan/esp-idf/export.sh then idf.py -B build build and idf.py -B build size passed for the established ESP32 P4 pre v3 normal profile with the reboot test disabled total image size 269432 bytes p4key.bin size 0x41df0 74 percent app partition free and SHA 256 e9d3aceb834e5f126bbdc502aeac6c4c0cb6e6cb7ff9d65c6cf0203e48e6cfe7
+
+persistent credential reboot profile build
+source /home/ishan/esp-idf/export.sh then scripts/build_cred_reboot_test.sh passed with the opt in reboot proof enabled hardware crypto configuration checks passing secure boot flash encryption and NVS encryption disabled total image size 368456 bytes 65 percent app partition free and p4key.bin SHA 256 ff2c0938c4c43cdc7f49582c40070f38a3af4da0f5fd38490b58d355952f0455
+
+persistent credential target proof
+Windows esptool 5.3.1 wrote and hash verified only the reboot profile bootloader at 0x2000 partition table at 0x8000 and app at 0x10000 on attached ESP32 P4 revision 1.3 without force or whole flash erase then the bounded secret safe COM7 checker observed wrap open PASS software reboot and persistence PASS in order
+
+persistent credential normal restore
+Windows esptool 5.3.1 wrote and hash verified only the normal default off bootloader partition table and app regions without touching NVS forcing revision or erasing the whole flash then hard reset the board
 
 Prompt 05 core host test
 python3 -m unittest tests.host.test_ctap_core -v compiled the actual bounded CBOR and CTAP dispatcher C sources with Wall Wextra Werror and passed canonical encode decode nested skip duplicate known key malformed bounds and default invalid command checks
@@ -302,6 +320,12 @@ the production CTAP task dispatches the existing fixed CTAPHID CBOR handoff into
 the direct Prompt 05 probe requires five exact 80 byte status plus CBOR responses invalid CBOR for a trailing malformed byte and immediate recovery while the standard probe uses python fido2 strict decoding
 the flashed Prompt 05 image enumerates as healthy 303a 4004 FIDO HID and the exact direct probe passed all repetitions malformed recovery and response fragmentation on the native USB connector
 python fido2 2.0.0 recognized exactly one authenticator strictly decoded five canonical responses and observed only FIDO 2 0 ES256 usb rk false and up true with no extensions PIN or UV
+the development root implementation generates exactly 32 bytes only for a missing NVS blob commits once reloads the exact same length later and fails closed on type size read or commit failure without erase or silent regeneration
+the runtime emits one concise flash extraction warning but never logs or exposes the development root nonce credential ID private scalar decrypted credential contents or authentication tag
+wrapped credential IDs are exactly 100 bytes with P4K1 version 1 ES256 identifier zero reserved bytes a fresh 12 byte nonce 64 byte ciphertext and 16 byte tag authenticated with the fixed eight byte header plus shared 16 byte AAGUID
+cred wrap validates P 256 scalars then uses the established rand fill and AES 256 GCM wrappers while cred open validates the envelope authenticates compares RP hashes without early exit validates the scalar returns one generic mismatch and clears temporary root plaintext and output on failure
+the opt in target proof generated one real P 256 credential wrapped and immediately opened it retained only the opaque exact ID and a public key fingerprint across esp restart then loaded the persisted NVS root opened that same ID and reproduced the public fingerprint
+the target proof passed on attached ESP32 P4 revision 1.3 and the normal firmware with the reboot proof disabled was restored afterward so later resets do not repeat the test
 
 WHAT IS BROKEN
 
@@ -320,11 +344,10 @@ negotiated speed is unavailable through the installed Windows HID and PnP tools 
 
 EXACT NEXT ACTION
 
-run the continuity check inspect and commit only the final target evidence as verify get info on device push fetch verify exact origin synchronization then stop without beginning Prompt 06
+stop after the persistent wrapped credential MVP and wait for the user supplied shortened MakeCredential stage without preimplementing it
 
 MANUAL ACTIONS STILL REQUIRED
 
-the single cable is back on native USB after the completed Prompt 05 target flash and no additional Prompt 05 physical action remains
 the powered native unplug replug and UART counter validation remains deferred and not passed and is not an MVP completion gate
 inspect the board rear or package for a PCB revision marking
 press BOOT during a later level diagnostic to directly confirm raw level 0
@@ -340,3 +363,4 @@ never put a key nonce private scalar decrypted credential record or eFuse secret
 the user removed repository planning copies in published commit 61e622a and attached prompt pack files are the stage instruction source
 Prompt 02 and Prompt 03 are complete under the one named deferred physical exception and Prompt 04 MVP is complete at four total stage commits
 the shortened user supplied Prompt 05 supersedes the original prompt pack stage and permits at most three coherent commits without MakeCredential GetAssertion storage PIN UV resident credentials passkeys or extensions
+the shortened user supplied persistent credential stage supersedes the old Prompt 06 and permits only the development NVS root exact wrapped credential operations and narrow reboot proof with no credential database MakeCredential eFuse HMAC attestation PIN resident credentials or later CTAP work

@@ -1096,3 +1096,41 @@ reconsider when
 a production AAGUID is assigned or a later completed stage adds a capability that must truthfully appear in GetInfo
 
 END DECISION
+
+decision
+0034
+
+time utc
+2026 08 28 02 17 48
+
+stage
+06 persistent wrapped credentials MVP
+
+problem
+the physical gate must prove that one exact opaque credential still opens with the same development root after a normal software reboot without creating a credential database retaining a private scalar or printing credential material
+
+choice
+use one default off target profile that retains only a magic pair the exact 100 byte opaque credential ID and a SHA 256 fingerprint of its public key in the ESP32 P4 no init region then open the retained ID after esp restart derive its public key and compare the fingerprint before clearing the retained state and restoring the normal image
+
+reason
+the two boot sequence exercises the real NVS reload hardware RNG AES GCM SHA and P 256 paths while the retained values are nonsecret and the normal firmware contains no active reboot proof
+
+alternatives rejected
+storing the test credential in NVS would create the credential database explicitly excluded from this MVP
+retaining or logging the private scalar root plaintext or raw credential evidence would violate the secret handling requirement
+using a host fixture alone would not prove that the root survived a real target reboot
+
+files affected
+components/p4_cred/Kconfig
+components/p4_cred/include/p4_cred_test.h
+components/p4_cred/p4_cred_reboot_test.c
+components/p4_cred/CMakeLists.txt
+main/app_main.c
+sdkconfig.cred-reboot-test.defaults
+scripts/build_cred_reboot_test.sh
+scripts/capture_cred_reboot_test.py
+
+reconsider when
+the later MakeCredential and GetAssertion flow provides its own end to end persistent credential reboot acceptance test
+
+END DECISION

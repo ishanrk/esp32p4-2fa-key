@@ -1,0 +1,12 @@
+menu "P4Key credential proof"
+
+config P4KEY_CRED_REBOOT_TEST
+    bool "Run wrapped credential reboot proof"
+    default n
+    help
+        Create wrap and open one test credential then perform one software
+        reboot and open the same opaque credential ID again. No credential
+        or private material is logged. Restore normal firmware after the
+        result is captured and keep this disabled in normal firmware.
+
+endmenu

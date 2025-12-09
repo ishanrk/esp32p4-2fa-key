@@ -1978,3 +1978,38 @@ next action
 run the exact Prompt 05 probe rather than the historical transport probe for target acceptance
 
 END ENTRY
+
+entry
+0057
+
+time utc
+2026 08 28 02 17 48
+
+stage
+06 persistent wrapped credentials MVP
+
+action
+use the detected WSL serial device first after the user moved the single cable to PWR USB TO UART
+
+observed
+Windows reported COM7 and WSL exposed dev ttyS7 but stty and esptool both returned input output errors while configuring that WSL serial endpoint
+
+cause
+the CH343 remained usable through the Windows COM port but this WSL serial bridge could not configure or open it
+
+fix tried
+keep all builds and host tests in WSL then use the already pinned Windows esptool 5.3.1 and pyserial environment for only the bounded COM7 flash and result capture
+
+result
+fixed with all three target image regions hash verified wrap open software reboot and persistence markers observed in order then all three normal image regions hash verified on restore
+
+commit
+pending verify wrapped credential reboot
+
+regression test
+the pinned Windows environment reported esptool 5.3.1 pyserial 3.5 and COM7 before connecting to the attached ESP32 P4 revision 1.3 without force or whole flash erase
+
+next action
+continue using WSL for repository work and the proven Windows COM7 bridge only when a later physical stage requires UART
+
+END ENTRY

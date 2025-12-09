@@ -1,5 +1,8 @@
 #include "p4_board.h"
 #include "p4_cred.h"
+#if CONFIG_P4KEY_CRED_REBOOT_TEST
+#include "p4_cred_test.h"
+#endif
 #include "p4_ctaphid.h"
 #include "p4_crypto.h"
 #include "p4_crypto_check.h"
@@ -108,6 +111,13 @@ void app_main(void)
         ESP_LOGE(tag, "credential root initialization failed (%d)", cred_err);
         return;
     }
+
+#if CONFIG_P4KEY_CRED_REBOOT_TEST
+    if (p4_cred_reboot_test_run() != 0) {
+        ESP_LOGE(tag, "credential reboot test failed");
+        return;
+    }
+#endif
 
     esp_err_t err = p4_board_init();
     if (err != ESP_OK) {
