@@ -80,6 +80,14 @@ bool p4_board_button_ready(void)
 }
 
 
+bool p4_board_button_pressed(void)
+{
+    return button_ready && p4_button_pressed(
+        gpio_get_level((gpio_num_t)CONFIG_P4KEY_BUTTON_GPIO),
+        CONFIG_P4KEY_BUTTON_ACTIVE_LOW);
+}
+
+
 int p4_board_button_gpio(void)
 {
     return CONFIG_P4KEY_BUTTON_GPIO;
