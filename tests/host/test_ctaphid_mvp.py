@@ -156,7 +156,7 @@ class CtaphidMvpTests(unittest.TestCase):
         )
         stub = (ROOT / "main" / "ctap_stub.c").read_text(encoding="utf-8")
         self.assertIn(
-            "p4_ctap_dispatch(s_request, request_len,", stub
+            "p4_ctap_dispatch(cid, s_request, request_len,", stub
         )
         self.assertIn(
             "hid_send_msg(cid, command, s_response, response_len);", stub

@@ -53,5 +53,11 @@ int press_wait(uint32_t cid)
         }
         vTaskDelay(pdMS_TO_TICKS(PRESS_SAMPLE_MS));
     }
-    return P4_PRESS_DENIED;
+    return P4_PRESS_TIMEOUT;
+}
+
+
+bool press_cancelled(uint32_t cid)
+{
+    return hid_cancelled(cid);
 }

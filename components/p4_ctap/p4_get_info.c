@@ -41,10 +41,10 @@ int p4_ctap_get_info(uint8_t *response,
     PUT(p4_cbor_put_uint(&writer, P4_CTAP_MAX_MESSAGE));
 
     PUT(p4_cbor_put_uint(&writer, 7));
-    PUT(p4_cbor_put_uint(&writer, 16));
+    PUT(p4_cbor_put_uint(&writer, P4_CTAP_MAX_CREDENTIALS_IN_LIST));
 
     PUT(p4_cbor_put_uint(&writer, 8));
-    PUT(p4_cbor_put_uint(&writer, 128));
+    PUT(p4_cbor_put_uint(&writer, P4_CTAP_MAX_CREDENTIAL_ID_LEN));
 
     PUT(p4_cbor_put_uint(&writer, 9));
     PUT(p4_cbor_put_array(&writer, 1));

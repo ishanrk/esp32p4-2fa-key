@@ -13,7 +13,7 @@
 #include "freertos/task.h"
 
 enum {
-    P4_CTAP_STUB_STACK_BYTES = 3072,
+    P4_CTAP_STUB_STACK_BYTES = 6144,
     P4_CTAP_STUB_WAIT_MS = 100,
     P4_CTAP_STUB_TOTAL_WAIT_MS = 1000,
 };
@@ -36,7 +36,7 @@ static void send_dispatch_result(uint32_t cid, uint8_t command,
                                  size_t request_len)
 {
     size_t response_len = 0;
-    int error = p4_ctap_dispatch(s_request, request_len,
+    int error = p4_ctap_dispatch(cid, s_request, request_len,
                                  s_response, sizeof(s_response),
                                  &response_len);
     if (error != P4_CTAP_OK) {

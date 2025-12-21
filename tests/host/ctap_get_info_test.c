@@ -35,6 +35,30 @@ static void fail(const char *name, int line)
 #define CHECK(value) do { if (!(value)) fail(__func__, __LINE__); } while (0)
 
 
+enum {
+    TEST_CID = 0x01020304,
+};
+
+
+int p4_ctap_make_credential(uint32_t cid,
+                            const uint8_t *request,
+                            size_t request_len,
+                            uint8_t *response,
+                            size_t response_cap,
+                            size_t *response_len)
+{
+    (void)cid;
+    (void)request;
+    (void)request_len;
+    (void)response;
+    (void)response_cap;
+    if (response_len != NULL) {
+        *response_len = 0;
+    }
+    return P4_CTAP_STATUS_INVALID_COMMAND;
+}
+
+
 static void check_text(p4_cbor_reader_t *reader, const char *expected)
 {
     const char *text = NULL;
@@ -119,7 +143,7 @@ static void test_get_info_exact_and_repeated(void)
     for (size_t attempt = 0; attempt < 5; attempt++) {
         memset(response, 0xaa, sizeof(response));
         size_t response_len = 0;
-        CHECK(p4_ctap_dispatch(request, sizeof(request),
+        CHECK(p4_ctap_dispatch(TEST_CID, request, sizeof(request),
                                response, sizeof(response),
                                &response_len) == P4_CTAP_OK);
         CHECK(response_len == sizeof(s_expected));
@@ -134,38 +158,40 @@ static void test_dispatch_errors_and_recovery(void)
     uint8_t response[128] = {0};
     size_t response_len = 0;
     const uint8_t malformed[] = {P4_CTAP_CMD_GET_INFO, 0xff};
-    CHECK(p4_ctap_dispatch(malformed, sizeof(malformed),
+    CHECK(p4_ctap_dispatch(TEST_CID, malformed, sizeof(malformed),
                            response, sizeof(response),
                            &response_len) == P4_CTAP_OK);
     CHECK(response_len == 1 &&
           response[0] == P4_CTAP_STATUS_INVALID_CBOR);
 
     const uint8_t valid[] = {P4_CTAP_CMD_GET_INFO};
-    CHECK(p4_ctap_dispatch(valid, sizeof(valid),
+    CHECK(p4_ctap_dispatch(TEST_CID, valid, sizeof(valid),
                            response, sizeof(response),
                            &response_len) == P4_CTAP_OK);
     CHECK(response_len == sizeof(s_expected));
     CHECK(memcmp(response, s_expected, sizeof(s_expected)) == 0);
 
-    const uint8_t unsupported[] = {P4_CTAP_CMD_MAKE_CREDENTIAL};
-    CHECK(p4_ctap_dispatch(unsupported, sizeof(unsupported),
+    const uint8_t unsupported[] = {0x7e};
+    CHECK(p4_ctap_dispatch(TEST_CID, unsupported, sizeof(unsupported),
                            response, sizeof(response),
                            &response_len) == P4_CTAP_OK);
     CHECK(response_len == 1 &&
           response[0] == P4_CTAP_STATUS_INVALID_COMMAND);
 
-    CHECK(p4_ctap_dispatch(NULL, 0, response, sizeof(response),
+    CHECK(p4_ctap_dispatch(TEST_CID, NULL, 0,
+                           response, sizeof(response),
                            &response_len) == P4_CTAP_OK);
     CHECK(response_len == 1 &&
           response[0] == P4_CTAP_STATUS_INVALID_LENGTH);
 
-    CHECK(p4_ctap_dispatch(valid, sizeof(valid),
+    CHECK(p4_ctap_dispatch(TEST_CID, valid, sizeof(valid),
                            response, sizeof(s_expected) - 1,
                            &response_len) == P4_CTAP_ERR_SMALL);
     CHECK(response_len == 0);
 
     static uint8_t larger_than_protocol[P4_CTAP_MAX_MESSAGE + 32];
-    CHECK(p4_ctap_dispatch(valid, sizeof(valid), larger_than_protocol,
+    CHECK(p4_ctap_dispatch(TEST_CID, valid, sizeof(valid),
+                           larger_than_protocol,
                            sizeof(larger_than_protocol), &response_len) ==
           P4_CTAP_OK);
     CHECK(response_len == sizeof(s_expected));
