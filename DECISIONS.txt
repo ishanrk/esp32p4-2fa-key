@@ -1134,3 +1134,34 @@ reconsider when
 the later MakeCredential and GetAssertion flow provides its own end to end persistent credential reboot acceptance test
 
 END DECISION
+
+decision
+0035
+
+time utc
+2026 08 28 02 55 37
+
+stage
+07 MakeCredential MVP
+
+problem
+the shortened prompt names the MakeCredential response fields fmt authData and attStmt as text labels while the CTAP2 wire response and pinned python fido2 2.0.0 model require integer map keys 1 2 and 3
+
+choice
+encode the three standard integer response keys and treat the prompt text as semantic field names
+
+reason
+the done gate requires standard FIDO tooling and the pinned decoder maps AttestationResponse fields to integer positions 1 2 and 3 and rejects text keyed wire responses
+
+alternatives rejected
+text wire keys would follow the prose literally but fail the standard python fido2 MakeCredential decoder
+adding both text and integer keys would be noncanonical and add unsupported response fields
+
+files affected
+components/p4_ctap/p4_make_credential.c
+tests/host/make_credential_test.c
+
+reconsider when
+the pinned CTAP response schema or standard tooling changes
+
+END DECISION

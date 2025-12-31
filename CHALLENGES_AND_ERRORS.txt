@@ -2013,3 +2013,73 @@ next action
 continue using WSL for repository work and the proven Windows COM7 bridge only when a later physical stage requires UART
 
 END ENTRY
+
+entry
+0058
+
+time utc
+2026 08 28 02 55 37
+
+stage
+07 MakeCredential MVP
+
+action
+run one elevated standard python fido2 MakeCredential probe wait for UP NEEDED then require one fresh BOOT press
+
+observed
+the first elevated wrapper captured UP NEEDED but PowerShell Stop handling discarded the safe native stderr result and the corrected separate stdout stderr wrapper then preserved CTAP user action timeout 0x2f with no credential response
+
+cause
+PowerShell 5.1 converts native stderr into a terminating error under ErrorActionPreference Stop and the physical press did not land inside the corrected probes 30 second fresh press window
+
+fix tried
+replace native stream merging with an elevated Start Process child that redirects stdout and stderr separately records its exit code and leaves the device enumerated after the bounded timeout
+
+result
+host result capture is fixed but the physical MakeCredential gate remains manually blocked and is not passed
+
+commit
+pending verify make credential on device
+
+regression test
+the corrected wrapper recorded probe exit 1 stdout UP NEEDED and sanitized stderr CTAP status 0x2f while Windows still reported healthy 303a 4004 HID compliant fido nodes
+
+next action
+leave the cable on native USB reply ready then press and release BOOT once only after the next standard probe reports UP NEEDED
+
+END ENTRY
+
+entry
+0059
+
+time utc
+2026 08 28 02 58 08
+
+stage
+07 MakeCredential MVP
+
+action
+rerun the corrected standard python fido2 MakeCredential probe only after the user said ready then wait for its UP NEEDED marker before requesting one fresh BOOT press
+
+observed
+the user pressed within the active window and the probe exited zero with none attestation an exact 100 byte credential ID exact RP hash flags 0x41 zero counter stable AAGUID and a valid ES256 EC2 public key
+
+cause
+the prior 0x2f result was only a missed manual timing window and not a firmware parser crypto wrapping USB or button input failure
+
+fix tried
+coordinate the 30 second physical window explicitly with the user and retain the corrected separate output and exit status capture
+
+result
+fixed and the MakeCredential physical done gate passed without a website action resident credential database secret logging or irreversible hardware change
+
+commit
+pending verify make credential on device
+
+regression test
+the elevated probe recorded exit zero UP NEEDED and all four sanitized PASS lines while stderr remained empty and Windows retained healthy 303a 4004 enumeration
+
+next action
+make and push the final target evidence commit then stop without beginning GetAssertion
+
+END ENTRY

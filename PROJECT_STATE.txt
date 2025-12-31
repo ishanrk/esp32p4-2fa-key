@@ -1,16 +1,16 @@
 P4KEY PROJECT STATE
 
 updated utc
-2026 08 28 02 17 48
+2026 08 28 02 58 08
 
 project
 ESP32-P4 2FA Key
 
 current stage
-06 persistent wrapped credentials MVP
+07 MakeCredential MVP
 
 stage status
-Prompt 05 MVP is complete and synced at 6b682d6 the shortened persistent credential stage has its fail closed development NVS root commit bbe81cf and exact 100 byte hardware AES GCM wrapped credential commit 68d5f94 pushed and synced focused host tests normal and opt in reboot builds real target wrap open and software reboot persistence proof all pass the normal default off firmware is restored and this state is the third and final verification commit candidate
+the fresh BOOT presence commit 8e6e432 and minimal MakeCredential implementation commit 5cea0e0 are pushed and synced all 50 host tests hardware crypto configuration checks and the normal ESP32 P4 pre v3 build pass the exact three image regions were hash verified on revision v1.3 and the final standard python fido2 request reached UP NEEDED accepted one fresh BOOT press and returned none attestation exact 100 byte credential ID exact authData fields and a valid ES256 EC2 public key the third target evidence commit is ready
 
 repository path
 /home/ishan/esp32p4-2fa-key
@@ -22,10 +22,18 @@ upstream
 origin/main
 
 local and upstream sync
-main and origin main are synced through 68d5f94 with zero ahead and zero behind before the final target evidence commit and must be verified identical immediately after that commit is pushed
+main and origin main are synced through 5cea0e0 with zero ahead and zero behind before the target evidence commit
 
 last successful commit
-68d5f94 wrap credentials with hardware aes before the final target evidence commit
+5cea0e0 implement make credential
+
+STAGE DONE GATE
+
+result
+passed one real standard MakeCredential request through the native USB CTAPHID CBOR path with genuine fresh GPIO35 BOOT user presence
+
+gate state
+complete after the target evidence commit is pushed and verified on origin do not begin GetAssertion
 
 BOARD
 
@@ -54,7 +62,7 @@ logging connector
 Type-C PWR USB TO UART through CH343P on GPIO37 and GPIO38 Windows COM7
 
 current cable position
-the single data capable cable remains on PWR USB TO UART after the completed target proof and normal firmware restore
+the single data capable cable remains on the native Type C connector labeled USB after the successful MakeCredential target proof
 
 button GPIO
 35 BOOT Key2 candidate for user presence
@@ -115,6 +123,21 @@ irreversible provisioning
 not performed
 
 LAST SUCCESSFUL COMMANDS
+
+MakeCredential host tests
+python3 -m unittest discover -s tests/host -v passed all 50 tests including the actual CTAP dispatcher bounded MakeCredential parser deterministic fresh user presence exact none response 232 byte authData 77 byte COSE key exact 100 byte wrapped credential reopening unsupported algorithm rk true uv true matching exclude and all prior regressions
+
+MakeCredential crypto configuration check
+python3 scripts/check_crypto_config.py passed the established ESP32 P4 pre v3 hardware SHA AES GCM and general ECC requirements with software fallbacks dedicated eFuse ECDSA secure boot and flash encryption paths unchanged
+
+MakeCredential normal firmware build
+source /home/ishan/esp-idf/export.sh then idf.py -B build build and idf.py -B build size passed with p4key bin size 0x5acf0 65 percent app partition free total image size 371586 bytes and SHA 256 18ceb0cae5434cef8147cbb770da1e66291e35fc931bea042a64aad26440c9e1
+
+MakeCredential target flash
+Windows esptool 5.3.1 on COM7 connected to ESP32 P4 revision v1.3 then wrote and hash verified only bootloader at 0x2000 partition table at 0x8000 and app at 0x10000 using DIO 40 MHz 16 MB and hard reset without force or whole flash erase
+
+MakeCredential live standard proof
+elevated Windows Python 3.12.2 with python fido2 2.0.0 and hidapi 0.15.0 recognized the healthy 303a 4004 authenticator issued one final standard MakeCredential request observed UP NEEDED accepted one fresh BOOT press and passed none attestation exact 100 byte credential ID RP hash flags 0x41 zero counter stable AAGUID and valid ES256 EC2 coordinate checks without retaining or printing the credential ID
 
 persistent credential host tests
 python3 -m unittest tests.host.test_cred_root tests.host.test_cred_wrap -v compiled the actual root and credential sources with Wall Wextra Werror then passed four focused tests covering first boot and exact reload NVS failures exact 100 byte format round trip wrong RP ciphertext and tag tamper 99 and 101 byte IDs zero scalar output clearing no heap and no sensitive logging
@@ -232,6 +255,12 @@ not attempted
 
 WHAT WORKS
 
+authenticatorMakeCredential command 01 parses required client hash RP user and algorithm fields and bounded exclude options and unknown optional fields with fixed buffers and no heap allocation
+fresh BOOT GPIO35 presence rejects an already held state requires stable release then a debounced fresh press sends UP NEEDED keepalives times out after 30 seconds and aborts on CTAPHID CANCEL
+the MakeCredential production path hashes exact RP ID bytes through the established hardware SHA path generates one P 256 credential through the established general ECC and hardware RNG paths and wraps the private scalar into an exact 100 byte ID through the existing hardware AES GCM path
+the private scalar is cleared immediately after wrapping and all MakeCredential work buffers are cleared without logging client hashes RP hashes keys nonces full credential IDs or decrypted contents
+the none attestation response contains exact flags 0x41 zero counter stable AAGUID big endian credential length 0x0064 and the exact ES256 EC2 COSE map with standard integer response keys 1 2 and 3
+one standard python fido2 2.0.0 MakeCredential request passed on the attached ESP32 P4 revision v1.3 after genuine fresh BOOT user presence
 repository and private origin audited
 pinned ESP IDF 6.0.2 environment verified
 connected CH343 interface identified as Windows COM7
@@ -333,7 +362,6 @@ WSL does not own the native USB device and Windows requires elevation for raw ac
 the powered unplug replug without reboot evidence remains pending
 the powered unplug replug counter gate cannot be proven with only one data capable cable and is explicitly deferred not passed and carried into the final acceptance checklist
 physical PCB revision is not established
-physical BOOT pressed level is not sampled yet
 idf.py size emits a nonfatal sram_seg classification warning on the first v3 build and not on the clean pre v3 report
 
 OPEN FACTS
@@ -344,7 +372,7 @@ negotiated speed is unavailable through the installed Windows HID and PnP tools 
 
 EXACT NEXT ACTION
 
-stop after the persistent wrapped credential MVP and wait for the user supplied shortened MakeCredential stage without preimplementing it
+stop after the shortened MakeCredential MVP and wait for a user supplied shortened GetAssertion stage without preimplementing it
 
 MANUAL ACTIONS STILL REQUIRED
 
@@ -364,3 +392,4 @@ the user removed repository planning copies in published commit 61e622a and atta
 Prompt 02 and Prompt 03 are complete under the one named deferred physical exception and Prompt 04 MVP is complete at four total stage commits
 the shortened user supplied Prompt 05 supersedes the original prompt pack stage and permits at most three coherent commits without MakeCredential GetAssertion storage PIN UV resident credentials passkeys or extensions
 the shortened user supplied persistent credential stage supersedes the old Prompt 06 and permits only the development NVS root exact wrapped credential operations and narrow reboot proof with no credential database MakeCredential eFuse HMAC attestation PIN resident credentials or later CTAP work
+the shortened user supplied MakeCredential stage supersedes the old Prompt 07 and permits only ES256 non discoverable credentials fresh BOOT presence none attestation bounded exclude handling and exact wrapped IDs with no GetAssertion PIN UV resident credentials extensions attestation key or website action
