@@ -44,6 +44,18 @@ int p4_ctap_dispatch(uint32_t cid,
         *response_len = status == P4_CTAP_STATUS_OK ? cbor_len + 1 : 1;
         return P4_CTAP_OK;
     }
+    if (request[0] == P4_CTAP_CMD_GET_ASSERTION) {
+        size_t cbor_len = 0;
+        int status = p4_ctap_get_assertion(
+            cid, request + 1, request_len - 1,
+            response + 1, cbor_cap, &cbor_len);
+        if (status < 0) {
+            return status;
+        }
+        response[0] = (uint8_t)status;
+        *response_len = status == P4_CTAP_STATUS_OK ? cbor_len + 1 : 1;
+        return P4_CTAP_OK;
+    }
     if (request[0] != P4_CTAP_CMD_GET_INFO) {
         response[0] = P4_CTAP_STATUS_INVALID_COMMAND;
         *response_len = 1;

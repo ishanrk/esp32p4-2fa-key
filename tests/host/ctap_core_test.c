@@ -39,6 +39,25 @@ int p4_ctap_make_credential(uint32_t cid,
 }
 
 
+int p4_ctap_get_assertion(uint32_t cid,
+                          const uint8_t *request,
+                          size_t request_len,
+                          uint8_t *response,
+                          size_t response_cap,
+                          size_t *response_len)
+{
+    (void)cid;
+    (void)request;
+    (void)request_len;
+    (void)response;
+    (void)response_cap;
+    if (response_len != NULL) {
+        *response_len = 0;
+    }
+    return P4_CTAP_STATUS_INVALID_COMMAND;
+}
+
+
 static void test_writer_and_reader(void)
 {
     static const uint8_t expected[] = {
