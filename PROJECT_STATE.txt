@@ -1,16 +1,16 @@
 P4KEY PROJECT STATE
 
 updated utc
-2026 08 28 02 58 08
+2026 08 28 03 36 46
 
 project
 ESP32-P4 2FA Key
 
 current stage
-07 MakeCredential MVP
+08 GetAssertion MVP
 
 stage status
-the fresh BOOT presence commit 8e6e432 and minimal MakeCredential implementation commit 5cea0e0 are pushed and synced all 50 host tests hardware crypto configuration checks and the normal ESP32 P4 pre v3 build pass the exact three image regions were hash verified on revision v1.3 and the final standard python fido2 request reached UP NEEDED accepted one fresh BOOT press and returned none attestation exact 100 byte credential ID exact authData fields and a valid ES256 EC2 public key the third target evidence commit is ready
+the minimal GetAssertion implementation commit ecd6980 is pushed and synced all 51 host tests hardware crypto configuration checks and the normal ESP32 P4 pre v3 build pass the exact three image regions were hash verified on revision v1.3 and one standard python fido2 register then allowList assertion cycle reached separate UP NEEDED waits accepted two genuine fresh BOOT presses returned exact 37 byte authData flags 0x01 zero counter and verified the DER signature with the registration public key the final target evidence commit is ready
 
 repository path
 /home/ishan/esp32p4-2fa-key
@@ -22,18 +22,18 @@ upstream
 origin/main
 
 local and upstream sync
-main and origin main are synced through 5cea0e0 with zero ahead and zero behind before the target evidence commit
+main and origin main are synced through ecd6980 with zero ahead and zero behind before the target evidence commit
 
 last successful commit
-5cea0e0 implement make credential
+ecd6980 implement get assertion
 
 STAGE DONE GATE
 
 result
-passed one real standard MakeCredential request through the native USB CTAPHID CBOR path with genuine fresh GPIO35 BOOT user presence
+passed one real standard MakeCredential then GetAssertion allowList cycle through native USB CTAPHID CBOR with two separate genuine fresh GPIO35 BOOT presses and independent assertion signature verification
 
 gate state
-complete after the target evidence commit is pushed and verified on origin do not begin GetAssertion
+complete after the target evidence commit is pushed and verified on origin do not begin old Prompt 09 or any later FIDO stage
 
 BOARD
 
@@ -62,7 +62,7 @@ logging connector
 Type-C PWR USB TO UART through CH343P on GPIO37 and GPIO38 Windows COM7
 
 current cable position
-the single data capable cable remains on the native Type C connector labeled USB after the successful MakeCredential target proof
+the single data capable cable remains on the native Type C connector labeled USB after the successful register and assertion target proof
 
 button GPIO
 35 BOOT Key2 candidate for user presence
@@ -123,6 +123,21 @@ irreversible provisioning
 not performed
 
 LAST SUCCESSFUL COMMANDS
+
+GetAssertion host tests
+python3 -m unittest discover -s tests/host -v passed all 51 tests including actual MakeCredential and GetAssertion command dispatch one exact wrapped allowList credential wrong RP tampered ID no credential behavior fresh presence gating exact 37 byte authData flags 0x01 zero counter independent valid P 256 signature verification with the MakeCredential response public key changed client hash rejection and all prior regressions
+
+GetAssertion crypto configuration check
+python3 scripts/check_crypto_config.py passed the established ESP32 P4 pre v3 hardware SHA AES GCM and general ECC requirements with software fallbacks dedicated eFuse ECDSA secure boot and flash encryption paths unchanged
+
+GetAssertion normal firmware build
+source /home/ishan/esp-idf/export.sh then idf.py -B build build and idf.py -B build size passed with p4key bin size 0x5fae0 63 percent app partition free total image size 391536 bytes and SHA 256 267efb3a2a701d831259c6c7ec380390ba0276f445dd6cc86dff41ddf69aff4e
+
+GetAssertion target flash
+Windows esptool 5.3.1 on COM7 connected to ESP32 P4 revision v1.3 then wrote and hash verified only bootloader at 0x2000 partition table at 0x8000 and app at 0x10000 using DIO 40 MHz 16 MB and hard reset without force or whole flash erase
+
+GetAssertion live standard proof
+elevated Windows Python 3.12.2 with python fido2 2.0.0 and hidapi 0.15.0 recognized the healthy 303a 4004 authenticator issued one MakeCredential and one GetAssertion using the returned exact 100 byte ID observed separate registration and assertion UP NEEDED waits accepted two fresh BOOT presses then passed exact 37 byte authData RP hash flags 0x01 zero counter selected ID match and DER signature verification using the registration ES256 public key without retaining or printing credential material
 
 MakeCredential host tests
 python3 -m unittest discover -s tests/host -v passed all 50 tests including the actual CTAP dispatcher bounded MakeCredential parser deterministic fresh user presence exact none response 232 byte authData 77 byte COSE key exact 100 byte wrapped credential reopening unsupported algorithm rk true uv true matching exclude and all prior regressions
@@ -261,6 +276,12 @@ the MakeCredential production path hashes exact RP ID bytes through the establis
 the private scalar is cleared immediately after wrapping and all MakeCredential work buffers are cleared without logging client hashes RP hashes keys nonces full credential IDs or decrypted contents
 the none attestation response contains exact flags 0x41 zero counter stable AAGUID big endian credential length 0x0064 and the exact ES256 EC2 COSE map with standard integer response keys 1 2 and 3
 one standard python fido2 2.0.0 MakeCredential request passed on the attached ESP32 P4 revision v1.3 after genuine fresh BOOT user presence
+authenticatorGetAssertion command 02 parses exact RP and 32 byte client hash fields bounded allowList descriptors and only the minimal supported options with fixed buffers and no heap allocation
+the GetAssertion path hashes exact RP ID bytes scans allowList in order opens only an exact 100 byte RP bound wrapped credential through the established hardware AES GCM path and normalizes every mismatch to no credentials
+one successful credential scalar remains only until a fresh BOOT press and the established cancel gates then is cleared immediately after signing together with the 69 byte input digest and all remaining work buffers
+assertion authData is exactly 37 bytes with the RP hash UP only flag 0x01 and zero counter and this MVP therefore provides no signature counter cloning detection
+the assertion signs SHA 256 of authData plus clientDataHash through the existing hardware SHA and general P 256 PSA routes and returns only the selected public key descriptor authData and strict DER signature
+one standard python fido2 2.0.0 register then allowList assertion cycle passed on the attached ESP32 P4 revision v1.3 after two genuine fresh BOOT presses and the signature verified with the registration public key
 repository and private origin audited
 pinned ESP IDF 6.0.2 environment verified
 connected CH343 interface identified as Windows COM7
@@ -372,7 +393,7 @@ negotiated speed is unavailable through the installed Windows HID and PnP tools 
 
 EXACT NEXT ACTION
 
-stop after the shortened MakeCredential MVP and wait for a user supplied shortened GetAssertion stage without preimplementing it
+stop after the shortened GetAssertion MVP because the requested authenticator firmware is functionally complete and wait for explicit user direction without beginning old Prompt 09 or later features
 
 MANUAL ACTIONS STILL REQUIRED
 
@@ -393,3 +414,4 @@ Prompt 02 and Prompt 03 are complete under the one named deferred physical excep
 the shortened user supplied Prompt 05 supersedes the original prompt pack stage and permits at most three coherent commits without MakeCredential GetAssertion storage PIN UV resident credentials passkeys or extensions
 the shortened user supplied persistent credential stage supersedes the old Prompt 06 and permits only the development NVS root exact wrapped credential operations and narrow reboot proof with no credential database MakeCredential eFuse HMAC attestation PIN resident credentials or later CTAP work
 the shortened user supplied MakeCredential stage supersedes the old Prompt 07 and permits only ES256 non discoverable credentials fresh BOOT presence none attestation bounded exclude handling and exact wrapped IDs with no GetAssertion PIN UV resident credentials extensions attestation key or website action
+the shortened user supplied GetAssertion stage supersedes the old Prompt 08 and permits only ES256 allowList credentials fresh BOOT presence exact 37 byte authData a zero counter and minimal response with no resident credentials PIN UV extensions counter persistence website action or later CTAP work

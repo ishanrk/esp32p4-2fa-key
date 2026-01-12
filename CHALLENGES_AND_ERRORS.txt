@@ -2083,3 +2083,38 @@ next action
 make and push the final target evidence commit then stop without beginning GetAssertion
 
 END ENTRY
+
+entry
+0060
+
+time utc
+2026 08 28 03 36 46
+
+stage
+08 GetAssertion MVP
+
+action
+run one elevated standard python fido2 MakeCredential then GetAssertion probe with separate genuine fresh BOOT presses
+
+observed
+the first registration UP NEEDED window expired with CTAP user action timeout 0x2f before a press was detected so no assertion began and the board remained healthy
+
+cause
+the first physical instruction did not land inside the bounded 30 second registration window and an immediate assertion start would also race the next assistant turn after a successful registration
+
+fix tried
+restart only after explicit user readiness and add a host side assertion start gate that keeps the returned public credential evidence transient while preventing the device assertion timer from starting until the second physical instruction can be delivered
+
+result
+fixed with one final uninterrupted standard cycle registration and assertion each reporting UP NEEDED accepting distinct fresh BOOT presses and exiting zero after exact authData checks and independent DER signature verification
+
+commit
+pending verify assertion on device
+
+regression test
+the elevated probe recorded registration UP NEEDED registration pass waiting assertion assertion UP NEEDED and all three sanitized PASS lines while stderr remained empty
+
+next action
+make and push the final target evidence commit then stop without beginning old Prompt 09 or later features
+
+END ENTRY

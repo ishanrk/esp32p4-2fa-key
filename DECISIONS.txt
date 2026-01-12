@@ -1165,3 +1165,36 @@ reconsider when
 the pinned CTAP response schema or standard tooling changes
 
 END DECISION
+
+decision
+0036
+
+time utc
+2026 08 28 03 36 46
+
+stage
+08 GetAssertion MVP
+
+problem
+the shortened assertion MVP requires a sign counter field but explicitly excludes counter persistence and must not advertise cloning detection it does not provide
+
+choice
+encode the four byte assertion sign count as zero and set only the user presence flag 0x01 with one concise source note that this MVP has no signature counter cloning detection
+
+reason
+zero is the truthful bounded FIDO 2 0 result for an authenticator without persistent monotonic counter state and preserves the exact 37 byte authData required by the stage
+
+alternatives rejected
+an in memory counter would reset after reboot and falsely appear monotonic
+an NVS counter would add excluded persistence wear and failure behavior
+a random or fixed nonzero value would misrepresent cloning detection
+
+files affected
+components/p4_ctap/p4_get_assertion.c
+tests/host/get_assertion_test.c
+scripts/fido2_register_assert.py
+
+reconsider when
+an explicitly requested later stage defines persistent atomic signature counter semantics and migration behavior
+
+END DECISION

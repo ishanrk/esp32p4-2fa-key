@@ -3,6 +3,7 @@
 import argparse
 import hashlib
 import sys
+import time
 from pathlib import Path
 
 from fido2.ctap import CtapError, STATUS
@@ -91,7 +92,17 @@ def select_device():
     return selected[0]
 
 
-def run(registration_marker, assertion_marker, output=sys.stdout):
+def wait_for_assertion_start(path, output):
+    print("REGISTRATION_PASS_WAITING_ASSERTION", file=output, flush=True)
+    for _ in range(12000):
+        if path.is_file():
+            return
+        time.sleep(0.05)
+    raise RegisterAssertError("assertion start timeout")
+
+
+def run(registration_marker, assertion_marker, assertion_start_gate,
+        output=sys.stdout):
     registration_keepalive, registration_marked = marker_callback(
         registration_marker, "REGISTRATION_UP_NEEDED", output
     )
@@ -117,6 +128,7 @@ def run(registration_marker, assertion_marker, output=sys.stdout):
         if not registration_marked():
             raise RegisterAssertError("registration user presence wait")
         credential_id, public_key = check_registration(registration)
+        wait_for_assertion_start(assertion_start_gate, output)
 
         assertion_hash = hashlib.sha256(
             b"p4key register assert assertion v1"
@@ -143,12 +155,19 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--registration-up-marker", required=True, type=Path)
     parser.add_argument("--assertion-up-marker", required=True, type=Path)
+    parser.add_argument("--assertion-start-gate", required=True, type=Path)
     args = parser.parse_args()
-    if args.registration_up_marker == args.assertion_up_marker:
+    paths = {
+        args.registration_up_marker,
+        args.assertion_up_marker,
+        args.assertion_start_gate,
+    }
+    if len(paths) != 3:
         print("FAIL marker paths must differ", file=sys.stderr)
         return 1
     try:
-        run(args.registration_up_marker, args.assertion_up_marker)
+        run(args.registration_up_marker, args.assertion_up_marker,
+            args.assertion_start_gate)
         return 0
     except CtapError as error:
         print(f"FAIL CTAP status 0x{int(error.code):02x}", file=sys.stderr)
