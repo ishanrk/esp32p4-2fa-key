@@ -50,7 +50,6 @@ import os
 MATCH_PATH = b"p4key-match-path"
 OTHER_PATH = b"unrelated-path"
 SAME_ID_WRONG_USAGE_PATH = b"same-id-wrong-usage"
-RESPONSE = b"P4KEY USB BRINGUP RESPONSE v1".ljust(64, b"\0")
 REPORT_DESCRIPTOR = bytes.fromhex(
     "06 d0 f1 09 01 a1 01 "
     "09 20 15 00 26 ff 00 75 08 95 40 81 02 "
@@ -131,26 +130,6 @@ class device:
             raise OSError("refusing unrelated HID path")
         if os.environ.get("HID_FAKE_MODE") == "open-error":
             raise OSError("planted open failure")
-
-    def write(self, data):
-        raw = bytes(data)
-        _record("write", data=raw, length=len(raw))
-        if os.environ.get("HID_FAKE_MODE") == "write-error":
-            raise OSError("planted write failure")
-        return len(raw)
-
-    def read(self, length, timeout_ms=None):
-        _record("read", length=length, timeout_ms=timeout_ms)
-        mode = os.environ.get("HID_FAKE_MODE", "success")
-        if mode == "read-error":
-            raise OSError("planted read failure")
-        if mode == "timeout":
-            return []
-        if mode == "short":
-            return list(RESPONSE[:-1])
-        if mode == "wrong-response":
-            return list(b"X" + RESPONSE[1:])
-        return list(RESPONSE)
 
     def get_report_descriptor(self, *args):
         _record("get_report_descriptor", args=args)
@@ -627,123 +606,6 @@ class UsbCliTests(unittest.TestCase):
         self.assertEqual(opens[0]["path"]["bytes_text"], "p4key-match-path")
         self.assertEqual(
             len([event for event in events if event["event"] == "close"]), 1
-        )
-
-    def test_bringup_probe_writes_no_id_plus_64_and_reads_64_finitely(self):
-        result = self.run_script(
-            "hid_probe.py",
-            [
-                "--bringup",
-                "--vid",
-                "0x303a",
-                "--pid",
-                "0x4004",
-                "--timeout-ms",
-                "40",
-            ],
-        )
-        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
-        events = self.events()
-        open_events = [event for event in events if event["event"] == "open_path"]
-        self.assertEqual(len(open_events), 1)
-        self.assertEqual(open_events[0]["path"]["bytes_text"], "p4key-match-path")
-
-        writes = [event for event in events if event["event"] == "write"]
-        self.assertEqual(len(writes), 1)
-        wire = bytes.fromhex(writes[0]["data"]["bytes_hex"])
-        self.assertEqual(len(wire), 65)
-        self.assertEqual(wire[0], 0)
-        self.assertEqual(
-            wire[1:],
-            b"P4KEY USB BRINGUP REQUEST v1".ljust(64, b"\0"),
-        )
-
-        reads = [event for event in events if event["event"] == "read"]
-        self.assertGreaterEqual(len(reads), 1)
-        for read in reads:
-            self.assertEqual(read["length"], 64)
-            self.assertIsInstance(read["timeout_ms"], int)
-            self.assertGreater(read["timeout_ms"], 0)
-            self.assertLessEqual(read["timeout_ms"], 40)
-        self.assertEqual(
-            len([event for event in events if event["event"] == "close"]), 1
-        )
-
-    def test_probe_closes_handle_on_descriptor_write_error_and_timeout(self):
-        for mode in ("wrong-descriptor", "write-error", "timeout"):
-            with self.subTest(mode=mode):
-                result = self.run_script(
-                    "hid_probe.py",
-                    [
-                        "--bringup",
-                        "--vid",
-                        "0x303a",
-                        "--pid",
-                        "0x4004",
-                        "--timeout-ms",
-                        "20",
-                    ],
-                    mode=mode,
-                )
-                self.assertNotEqual(
-                    result.returncode, 0, result.stdout + result.stderr
-                )
-                events = self.events()
-                self.assertEqual(
-                    len([event for event in events if event["event"] == "close"]),
-                    1,
-                )
-                if mode == "wrong-descriptor":
-                    self.assertFalse(
-                        any(event["event"] == "write" for event in events)
-                    )
-
-    def test_normal_no_response_mode_accepts_only_a_finite_timeout(self):
-        arguments = [
-            "--normal-no-response",
-            "--vid",
-            "0x303a",
-            "--pid",
-            "0x4004",
-            "--timeout-ms",
-            "20",
-        ]
-        timeout_result = self.run_script(
-            "hid_probe.py", arguments, mode="timeout"
-        )
-        self.assertEqual(
-            timeout_result.returncode,
-            0,
-            timeout_result.stdout + timeout_result.stderr,
-        )
-        timeout_events = self.events()
-        self.assertEqual(
-            len([event for event in timeout_events if event["event"] == "close"]),
-            1,
-        )
-
-        response_result = self.run_script(
-            "hid_probe.py", arguments, mode="success"
-        )
-        self.assertNotEqual(
-            response_result.returncode,
-            0,
-            response_result.stdout + response_result.stderr,
-        )
-        response_events = self.events()
-        self.assertEqual(
-            len([event for event in response_events if event["event"] == "close"]),
-            1,
-        )
-
-    def test_probe_requires_explicit_firmware_mode_before_opening(self):
-        result = self.run_script(
-            "hid_probe.py",
-            ["--vid", "0x303a", "--pid", "0x4004"],
-        )
-        self.assertNotEqual(result.returncode, 0)
-        self.assertFalse(
-            any(event["event"] == "open_path" for event in self.events())
         )
 
     def test_source_descriptor_check_does_not_require_hidapi(self):

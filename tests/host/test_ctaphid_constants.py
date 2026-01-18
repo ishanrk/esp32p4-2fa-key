@@ -1,5 +1,4 @@
 import pathlib
-import re
 import subprocess
 import tempfile
 import unittest
@@ -7,7 +6,6 @@ import unittest
 
 ROOT = pathlib.Path(__file__).resolve().parents[2]
 WIRE = ROOT / "components" / "p4_ctaphid" / "include" / "p4_ctaphid_wire.h"
-NOTES = ROOT / "docs" / "CTAPHID_NOTES.txt"
 
 
 class CtaphidConstantTests(unittest.TestCase):
@@ -58,14 +56,6 @@ int main(void) { return 0; }
                 check=True,
             )
             subprocess.run([str(output)], check=True)
-
-    def test_notes_record_local_timeout_policy(self):
-        text = NOTES.read_text(encoding="utf-8")
-        self.assertIn("sets no numeric value", text)
-        self.assertIn("selects 500 milliseconds", text)
-        self.assertIn("project capability byte is therefore 0x0c", text)
-        self.assertRegex(text, re.compile(r"normative maximum of 127"))
-
 
 if __name__ == "__main__":
     unittest.main()

@@ -48,10 +48,10 @@ CONFIG_TINYUSB_DFU_MODE_NONE=y
 CONFIG_TINYUSB_NET_MODE_NONE=y
 CONFIG_TINYUSB_VENDOR_COUNT=0
 
-# diagnostic packet exchange stays opt in
+# non-production diagnostics stay disabled
 # CONFIG_P4KEY_USB_BRINGUP is not set
 # CONFIG_P4KEY_HID_WAIT_TEST is not set
 
-# stage 01 must stay reversible
+# irreversible security features remain disabled for this development build
 # CONFIG_SECURE_BOOT is not set
 # CONFIG_SECURE_FLASH_ENC_ENABLED is not set

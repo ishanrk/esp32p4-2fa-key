@@ -1,6 +1,6 @@
 P4KEY DEVELOPMENT USB ID NOTICE
 
-The Prompt 03 development firmware uses USB VID 0x303A and PID 0x4004.
+The development firmware uses USB VID 0x303A and PID 0x4004.
 
 esp_tinyusb explicitly permits the Espressif VID during product development.
 Its documented interface bitmap gives PID 0x4004 for an HID-only device.

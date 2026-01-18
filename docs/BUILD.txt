@@ -1,56 +1,44 @@
-ESP32-P4 2FA KEY BUILD BASELINE
+ESP32-P4 2FA KEY BUILD
 
-PINNED TOOLS
+REQUIREMENTS
 
-ESP IDF
-v6.0.2
+ESP-IDF v6.0.2 with the ESP32-P4 toolchain
+Python 3
+CMake and Ninja from the ESP-IDF environment
 
-target
-esp32p4
-
-compiler observed
-riscv32-esp-elf-gcc 15.2.0
-
-esptool observed
-5.3.1
-
-Python observed
-3.10.12
-
-intended later components
-espressif esp_tinyusb 2.2.1
-espressif cbor 0.6.1~4
-
-Stage 01 does not add either managed component because neither is used yet.
-No component manifest or generated dependency lock exists in this stage.
+The managed USB component versions are pinned by main/idf_component.yml and
+dependencies.lock. Host-only FIDO and HID packages are pinned in
+requirements-host.txt.
 
 ENVIRONMENT
 
 From the repository root:
 
-. /home/ishan/esp-idf/export.sh
+. /path/to/esp-idf/export.sh
 python3 scripts/env_check.py
 
-The environment checker reports every required host tool and never installs
-or changes software. A wrong IDF version fails unless the developer passes
---allow-version-mismatch explicitly.
+The environment checker reports missing tools or a different ESP-IDF version.
+It does not install or modify software.
 
-BUILD
+NORMAL BUILD
 
 scripts/build.sh
 
-The script selects esp32p4 only when sdkconfig is absent or targets something
-else. It then runs:
+The script selects esp32p4 when needed, then runs idf.py build and idf.py size.
+The tracked sdkconfig.defaults is the reproducible normal configuration. The
+generated sdkconfig and build directory remain local.
 
-idf.py build
-idf.py size
+HOST TESTS
 
-The source controlled sdkconfig.defaults enables the proven 16 MB flash,
-the module PSRAM, the pre-v3 silicon path required by the attached v1.3 chip,
-development logging on UART0, and no irreversible security feature. The
-generated sdkconfig remains local.
+python3 -m unittest discover -s tests/host -v
+
+The host suite compiles the bounded C helpers and protocol paths with strict
+warnings and checks CBOR, CTAP2, CTAPHID, wrapped credentials, user presence,
+USB descriptors, and the normal hardware-crypto configuration.
 
 FLASH
+
+Connect the Type-C port labeled PWR USB TO UART, then run:
 
 scripts/flash.sh PORT
 
@@ -58,49 +46,17 @@ or:
 
 P4KEY_PORT=PORT scripts/flash.sh
 
-The wrapper runs idf.py -p PORT flash. It does not erase the whole flash and
-does not start a monitor.
+The wrapper performs a normal idf.py flash. It does not request a whole-flash
+erase. UART logs are available with scripts/monitor.sh PORT.
 
-MONITOR
+NORMAL USB USE
 
-scripts/monitor.sh PORT
+After flashing, connect the separate Type-C port labeled USB to the host. That
+connector carries the native FIDO HID device. PWR USB TO UART is only the
+flashing and logging path.
 
-or:
+CONFIGURATION
 
-P4KEY_PORT=PORT scripts/monitor.sh
-
-The board's logging connector is the Type-C port labeled PWR USB TO UART.
-It uses a CH343P and appeared on the current Windows host as COM7.
-This WSL environment cannot currently open that Windows serial device directly.
-The stage 01 target run used a temporary Windows esptool 5.3.1 environment and
-COM7. A normal flash at 40 MHz succeeded and verified the bootloader, partition
-table, and application. The temporary environment is not part of the project.
-
-The native FIDO device candidate is the separate Type-C connector labeled USB.
-Do not put FIDO traffic on the CH343 logging connector.
-
-HOST TESTS
-
-python3 -m unittest discover -s tests/host -v
-
-The suite compiles the pure button helper with -Wall -Wextra -Werror and checks
-active low active high and unconfigured GPIO behavior. It also runs state_check
-against filled missing-file and likely-secret fixtures.
-
-PARTITION BASELINE
-
-The generated default single application table contains:
-
-nvs
-offset 0x9000
-size 24 KiB
-
-phy_init
-offset 0xf000
-size 4 KiB
-
-factory
-offset 0x10000
-size 1 MiB
-
-Stage 01 does not store a wrapping root or any credential data.
+sdkconfig.defaults selects the attached pre-v3 ESP32-P4 path, 16 MiB flash,
+PSRAM, one full-speed HID interface, hardware SHA, hardware AES/GCM, and the
+general P-256 ECC accelerator. Secure Boot and flash encryption remain off.

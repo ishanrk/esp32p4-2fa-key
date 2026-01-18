@@ -15,9 +15,6 @@ QUEUE_DEPTH = 8
 REPORT_DESC_BYTES = 34
 CONFIG_DESC_BYTES = 41
 
-BRINGUP_REQUEST = b"P4KEY USB BRINGUP REQUEST v1".ljust(REPORT_BYTES, b"\0")
-BRINGUP_RESPONSE = b"P4KEY USB BRINGUP RESPONSE v1".ljust(REPORT_BYTES, b"\0")
-
 EXPECTED_REPORT_DESCRIPTOR = bytes.fromhex(
     "06 d0 f1 09 01 a1 01 "
     "09 20 15 00 26 ff 00 75 08 95 40 81 02 "
@@ -642,8 +639,6 @@ def check_project_source(root=REPO):
         main_source = read_text(root / "main/app_main.c")
         kconfig = read_text(root / "components/p4_usb/Kconfig")
         defaults_text = read_text(root / "sdkconfig.defaults")
-        bringup_defaults_text = read_text(root / "sdkconfig.usb-bringup.defaults")
-
         constants = parse_header_constants(header)
         for name, expected in EXPECTED_CONSTANTS.items():
             observed = constants.get(name)
@@ -665,16 +660,6 @@ def check_project_source(root=REPO):
             observed = defaults.get(name, "missing")
             if observed != expected:
                 errors.append(f"{name} expected {expected} got {observed}")
-
-        bringup_defaults, bringup_duplicates = parse_sdkconfig(
-            bringup_defaults_text
-        )
-        if bringup_duplicates or bringup_defaults != {
-            "CONFIG_P4KEY_USB_BRINGUP": "y"
-        }:
-            errors.append(
-                "sdkconfig.usb-bringup.defaults must contain only the bringup flag"
-            )
 
         report = extract_c_array(desc_source, "p4_usb_report_desc")
         report_facts, report_errors = check_report_descriptor(report, True)

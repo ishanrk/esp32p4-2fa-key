@@ -481,7 +481,7 @@ uint16_t tud_hid_get_report_cb(uint8_t instance, uint8_t report_id,
     (void)buffer;
     (void)reqlen;
 
-    // no control input or feature reports in this stage
+    // no control input or feature reports
     return 0;
 }
 

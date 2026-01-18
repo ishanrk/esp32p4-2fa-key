@@ -1,8 +1,5 @@
 ESP32-P4 2FA KEY BOARD FACTS
 
-stage 01 evidence snapshot
-2026 08 26
-
 OFFICIAL SOURCES
 
 Waveshare product documentation
@@ -11,90 +8,45 @@ https://docs.waveshare.com/ESP32-P4-Module-DEV-KIT
 Waveshare schematic
 https://files.waveshare.com/wiki/ESP32-P4-Module-DEV-KIT/ESP32-P4-Module-DEV-KIT.pdf
 
-prior photograph of this project board
-/home/ishan/esp32p4-nnue/web/public/images/esp32-p4-module-dev-kit.jpg
+HARDWARE
 
-prior nonsecret boot record
-/home/ishan/esp32p4-nnue/README.md
+| fact | value | evidence |
+| --- | --- | --- |
+| board | Waveshare ESP32-P4-Module-DEV-KIT | product documentation and board silkscreen |
+| module | ESP32-P4-Module with ESP32-P4NRW32 | module marking and product documentation |
+| tested chip revision | v1.3 | esptool probe and boot output |
+| memory | 32 MiB PSRAM and 16 MiB external flash | product documentation and runtime queries |
+| native FIDO connector | Type-C port labeled USB | schematic USB1P1 data path and live HID enumeration |
+| flash and log connector | Type-C port labeled PWR USB TO UART | CH343P schematic path |
+| user-presence button | BOOT Key2 on GPIO35, active low | board schematic and live user-presence tests |
+| native USB pins | GPIO24 D- and GPIO25 D+ on full-speed PHY0 | schematic and ESP-IDF PHY routing |
 
-FACT TABLE
+USB ROUTING
 
-| fact | value | evidence | confidence | action when unknown |
-| --- | --- | --- | --- | --- |
-| exact product | Waveshare ESP32-P4-Module-DEV-KIT SKU family 30560 | board photo silkscreen and official product page | high | none |
-| board revision | not established | no PCB revision is visible in the available front photo or official schematic | low | inspect a rear silkscreen or packaging |
-| module | ESP32-P4-Module with ESP32-P4NRW32 | module shield text in the board photo and official product page | high | none |
-| chip revision | v1.3 | esptool direct probe and baseline bootloader and app output in docs/BOOT_SAMPLE.txt | high | none |
-| module memory | 32 MiB stacked PSRAM and 16 MiB external Nor flash | official product page plus runtime 33554432 and 16777216 byte queries | high | none |
-| native USB device connector | Type-C connector labeled USB | photo label and schematic H2 direct USB1P1 data pair | high | enumerate the Prompt 03 firmware on this connector |
-| USB data controller | H2 is FS PHY0 on GPIO24 and GPIO25 which defaults to USB Serial JTAG; firmware must reversibly route OTG1.1 USB WRAP to PHY0 before TinyUSB starts | schematic H2 wiring installed ESP-IDF v6.0.2 PHY selector and live change from 303a 1001 to healthy 303a 4004 | high | powered physical remount validation is deferred and not passed |
-| separate logging and flashing | Type-C PWR USB TO UART through CH343P on GPIO37 and GPIO38 | photo label schematic USB to UART block and Windows PnP | high | use COM7 while attached to Windows |
-| native OTG alternatives | Type-A USB 2.0 high-speed bank with HOST DEVICE jumper | official product page and board photo | high | leave unused for the first direct device baseline |
-| buttons | BOOT and RST | board photo and official product page | high | none |
-| user presence candidate | BOOT Key2 on GPIO35 | official schematic Key2 GPIO35 to GND and running firmware config | high | verify the pressed raw level without resetting |
-| button active level | active low with idle raw level 1 | schematic switch closes GPIO35 to GND and baseline boot output | high for wiring and idle | manually sample raw level while pressed |
-| external button pull | no discrete pull shown at Key2 so the firmware enables the internal pull up | official schematic BOOT block and stable runtime idle level 1 | high | none |
-| dual cable power | USB0_5V and USB1_5V feed the common VCC_5V power path through the board power selection network | official schematic POWER block | high | use host powered cables and avoid an extra 5 V header source |
-| high speed USB hardware | the separate Type-A jumper bank exposes the board high speed path but is not the selected Prompt 03 connector | official product page and schematic | high | leave this route unused during the full speed Type-C baseline |
-| flash and NVS | 16 MiB flash; NVS offset 0x9000 size 24 KiB; phy_init 0xf000 size 4 KiB; factory app 0x10000 size 1 MiB | runtime flash query generated partition table and captured boot table | high | revisit the table only when storage requirements change |
+The Type-C connector labeled USB is wired to ESP32-P4 full-speed PHY0. At
+reset that PHY is assigned to USB Serial/JTAG. Before TinyUSB starts, the board
+helper uses the supported ESP-IDF USB wrapper selector to route OTG1.1 to PHY0.
+This is a reversible software selection and does not write an eFuse.
 
-RUNTIME BASELINE
+The separate Type-C connector labeled PWR USB TO UART terminates at the CH343P
+and is used for flashing and logs. It is not the native FIDO device path. The
+Type-A high-speed OTG connector bank is not used by this firmware.
 
-The baseline was built with ESP-IDF v6.0.2 for the pre-v3 ESP32-P4 path.
-Image metadata accepts silicon revision v0.0 through v1.99 and the attached
-chip is v1.3. A normal non-forced flash wrote the bootloader partition table
-and application, verified every image hash, and reset through RTS.
+BUTTON
 
-The captured boot proves two cores, a 360 MHz CPU, 16 MiB DIO flash at 40 MHz,
-32 MiB PSRAM at 200 MHz, UART logging on GPIO37 and GPIO38, and BOOT GPIO35
-idle high. The firmware reached its idle loop without a reset or crash.
+BOOT connects GPIO35 to ground. Firmware enables the internal pull-up, requires
+a stable release before each request, debounces a fresh active-low press, and
+uses that press for FIDO user presence.
 
-The physical pressed level was not sampled because no person was available to
-hold the key. The schematic proves that Key2 closes GPIO35 to ground; a later
-manual level diagnostic should still confirm raw level 0 while pressed.
+TESTED BASELINE
 
-STARTING BOARD STATE
+The normal firmware has been built with ESP-IDF v6.0.2 for the pre-v3 silicon
+path and run on revision v1.3. Runtime checks reported two cores, 16 MiB flash,
+32 MiB PSRAM, UART logging on GPIO37/GPIO38, and native FIDO HID enumeration on
+the Type-C USB connector.
 
-The CH343 interface appeared in Windows as USB VID 1A86 PID 55D3 on COM7.
-It was not passed through to WSL.
+POWER
 
-Before any new flash the existing NNUE firmware answered four read only protocol requests.
-
-protocol
-1
-
-reported target
-esp32p4
-
-firmware
-1.1.0
-
-model state
-embedded
-
-model format
-3
-
-model bytes
-328480
-
-transposition table bytes
-262144
-
-The old firmware does not expose silicon revision flash size or PSRAM through its protocol.
-No flash erase eFuse write security feature or other irreversible action was performed.
-
-PROMPT 03 CABLE AND POWER ARRANGEMENT
-
-Use a known data-capable Type-C cable from the connector labeled USB to the
-host for native FIDO HID traffic. This connector is the direct USB1P1 full
-speed PHY0 path on GPIO24 and GPIO25. At reset PHY0 exposes USB Serial JTAG;
-the application uses the ESP-IDF software selector to move OTG1.1 USB WRAP to
-PHY0 without changing eFuses. Do not use the Type-A high speed jumper bank for
-this baseline.
-
-Keep a second known data-capable Type-C cable from PWR USB TO UART to the host
-for CH343 flashing and logs. Windows currently identifies that path as COM7.
-Both USB inputs join the board 5 V power network through its power selection
-circuit, so do not add another 5 V header source. Enumeration must establish
-that the native cable carries data; cable shape alone is not proof.
+The USB and PWR USB TO UART inputs join the board 5 V network through the board
+power-selection circuit. Do not add an unrelated external 5 V source while the
+board is USB powered.

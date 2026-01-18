@@ -10,7 +10,7 @@
 #if CFG_TUD_CDC || CFG_TUD_MSC || CFG_TUD_MIDI || CFG_TUD_VENDOR || \
     CFG_TUD_ECM_RNDIS || CFG_TUD_NCM || CFG_TUD_DFU || \
     CFG_TUD_DFU_RUNTIME || CFG_TUD_BTH
-#error "P4Key Prompt 03 permits only the HID device class"
+#error "P4Key permits only the HID device class"
 #endif
 
 

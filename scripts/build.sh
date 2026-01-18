@@ -7,7 +7,7 @@ cd "$repo_dir"
 
 if ! command -v idf.py >/dev/null 2>&1; then
     echo "idf.py not found" >&2
-    echo "run: . /home/ishan/esp-idf/export.sh" >&2
+    echo "run: . /path/to/esp-idf/export.sh" >&2
     exit 1
 fi
 

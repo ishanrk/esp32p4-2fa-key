@@ -1,11 +1,11 @@
 ESP32-P4 2FA KEY CRYPTO PATHS
 
-stage 02 source proof
+implementation source baseline
 ESP-IDF v6.0.2 checkout 7101770dc6db2667b3c477cc31365dd1acd6db4e
 Mbed TLS 4.1.0 with the public PSA Crypto API
 
-The evidence below comes from the installed pinned source tree at
-/home/ishan/esp-idf. Timing is supporting data only and never selects a path.
+The source paths below are relative to the pinned ESP-IDF tree at IDF_PATH.
+Timing is supporting data only and never selects a hardware path.
 
 PATH TABLE
 
@@ -66,7 +66,7 @@ comes from CONFIG_MBEDTLS_HARDWARE_AES and the selected Espressif source path.
 
 SECURITY BOUNDARY
 
-No eFuse is read written provisioned or modified by this stage. Secure Boot and
+No eFuse is read written provisioned or modified by this firmware. Secure Boot and
 Flash Encryption stay disabled. Per-credential private scalars remain visible
 to software long enough to export wrap and sign, and temporary copies must be
 cleared. This is not a claim of hardware-protected credential keys.
@@ -92,11 +92,10 @@ ASN.1 DER. Verification first enforces short minimal lengths and positive
 minimal INTEGER encodings, then parses and re-encodes the signature and requires
 an exact match. This rejects trailing bytes and alternate BER encodings.
 
-TARGET PROOF PROFILE
+TARGET VALIDATION
 
-CONFIG_P4KEY_CRYPTO_SELFTEST and CONFIG_P4KEY_CRYPTO_BENCH default off. The
-sdkconfig.crypto-test.defaults profile enables them only in build/crypto-test.
-The attached revision v1.3 board passed all 23 named tests and all 9 bounded
-benchmarks through Windows COM7. Logs contain test names status numeric failure
-details and timing only. Timing is supporting data and is not a constant-time or
-hardware-selection claim.
+CONFIG_P4KEY_CRYPTO_SELFTEST and CONFIG_P4KEY_CRYPTO_BENCH default off and are
+not part of the normal firmware. During implementation, an attached revision
+v1.3 board passed all 23 bounded crypto self-tests and all 9 supporting
+benchmarks. Timing is not a constant-time or hardware-selection claim; hardware
+selection comes from the pinned configuration and ESP-IDF source routes above.

@@ -49,7 +49,7 @@ void p4_usb_queue_reset(p4_usb_queue_t *queue)
         return;
     }
 
-    // old bytes are not secret at this stage but clear them for later reuse
+    // clear old bytes before reuse
     memset(queue, 0, sizeof(*queue));
 }
 

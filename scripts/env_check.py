@@ -77,7 +77,7 @@ def main():
             failed = True
 
     if failed:
-        print("FIX run: . /home/ishan/esp-idf/export.sh")
+        print("FIX run: . /path/to/esp-idf/export.sh")
         return 1
 
     print("PASS environment is ready for ESP32-P4")
