@@ -3,6 +3,9 @@ PROJECT_STATE.txt
 CHALLENGES_AND_ERRORS.txt
 DECISIONS.txt
 
+# consolidated into the root README
+docs/
+
 # ESP-IDF output and local configurations
 build/
 managed_components/
