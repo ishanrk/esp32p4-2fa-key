@@ -2,7 +2,7 @@
 
 This is a USB FIDO2 2 factor authenticator for the Waveshare ESP32-P4-Module-DEV-KIT.
 
-** I personally use this 2fa for my github logins**
+**I personally use this 2fa for my github logins**
 
 
 
