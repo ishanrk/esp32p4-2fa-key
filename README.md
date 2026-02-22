@@ -13,10 +13,15 @@ https://github.com/user-attachments/assets/a30b94ad-aff3-4bb2-8cbb-00eaf5deac2f
 ## Some Features
 
 a) `FIDO_2_0` 2fa 
+
 b_CTAP2 over USB HID
+
 c) ES256 / P-256 key generation
+
 d) Non-discoverable credentials (i.e no-one can find my passkey if they don't have my private key)
+
 e) BOOT GPIO35 button programmable
+
 f) 100 byte AES-GCM wrapped credential IDs
 
 ## Board and USB
