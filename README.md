@@ -1,4 +1,4 @@
-# ESP32-P4 2FA Key
+# Custom Microcontroller 2FA Security Key
 
 This is a USB FIDO2 2 factor authenticator for the Waveshare ESP32-P4-Module-DEV-KIT.
 
