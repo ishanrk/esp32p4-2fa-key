@@ -42,10 +42,6 @@ d) ES256 uses PSA/Mbed TLS with the ESP general P-256 ECC accelerator.
 
 These functions are genuinely accelerated on this chip due to having specialized hardware.
 
-## Architecture
-
-`website/browser → USB HID → CTAPHID → CTAP2 → wrapped credential → hardware crypto`
-
 ## Build
 
 Requires ESP-IDF v6.0.2.
